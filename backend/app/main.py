@@ -3,7 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import get_settings
 from contextlib import asynccontextmanager
 from motor.motor_asyncio import AsyncIOMotorClient
-# from beanis import init_beanie # TODO: Initialize beanie models relative imports once models are defined
+from beanie import init_beanie
+from app.models.user import User
+from app.api.v1.endpoints import auth
 
 settings = get_settings()
 
@@ -13,6 +15,8 @@ async def lifespan(app: FastAPI):
     # Startup: Connect to DB
     app.mongodb_client = AsyncIOMotorClient(settings.MONGODB_URL)
     app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
+
+    await init_beanie(database=app.mongodb, document_models=[User])
     print("Connected to MongoDB")
     yield
     # Shutdown
@@ -25,6 +29,8 @@ app = FastAPI(
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     lifespan=lifespan,
 )
+
+app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 
 # Set all CORS enabled origins
 app.add_middleware(
