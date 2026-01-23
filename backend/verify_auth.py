@@ -6,14 +6,28 @@ settings = get_settings()
 BASE_URL = "http://localhost:8000" + settings.API_V1_STR
 
 async def verify_auth():
-    email = "test@example.com"
+    valid_email = "test@vanderbilt.edu"
+    invalid_email = "test@gmail.com"
     password = "secret_password"
     
     async with httpx.AsyncClient() as client:
-        # 1. Signup
-        print("Testing Signup...")
+        # 0. Test Invalid Signup
+        print("Testing Invalid Signup (@gmail.com)...")
         response = await client.post(f"{BASE_URL}/auth/signup", json={
-            "email": email,
+            "email": invalid_email,
+            "password": password,
+            "full_name": "Bad User"
+        })
+        if response.status_code == 422:
+            print("Invalid signup correctly rejected.")
+        else:
+            print(f"Invalid signup failed to reject! Status: {response.status_code}")
+            return
+
+        # 1. Signup
+        print("Testing Valid Signup (@vanderbilt.edu)...")
+        response = await client.post(f"{BASE_URL}/auth/signup", json={
+            "email": valid_email,
             "password": password,
             "full_name": "Test User"
         })
@@ -28,7 +42,7 @@ async def verify_auth():
         # 2. Login
         print("Testing Login...")
         response = await client.post(f"{BASE_URL}/auth/login", data={
-            "username": email,
+            "username": valid_email,
             "password": password
         })
         if response.status_code != 200:

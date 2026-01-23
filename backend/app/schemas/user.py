@@ -10,8 +10,18 @@ class UserBase(BaseModel):
     is_superuser: bool = False
 
 
+from pydantic import BaseModel, EmailStr, field_validator
+
+
 class UserCreate(UserBase):
     password: str
+
+    @field_validator("email")
+    @classmethod
+    def validate_vandy_email(cls, v: str) -> str:
+        if not v.lower().endswith("@vanderbilt.edu"):
+            raise ValueError("Email must be a @vanderbilt.edu address")
+        return v
 
 
 class UserUpdate(UserBase):
