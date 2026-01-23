@@ -7,6 +7,7 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 settings = get_settings()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Connect to DB
@@ -18,24 +19,27 @@ async def lifespan(app: FastAPI):
     app.mongodb_client.close()
     print("Disconnected from MongoDB")
 
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"], # Frontend URL
+    allow_origins=["http://localhost:3000"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
 @app.get("/")
 async def root():
     return {"message": "Welcome to Reuse Vandy API"}
+
 
 @app.get("/health")
 async def health_check():
