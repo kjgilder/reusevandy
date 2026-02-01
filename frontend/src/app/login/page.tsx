@@ -15,8 +15,12 @@ export default function LoginPage() {
         e.preventDefault();
         try {
             await login(email, password);
-        } catch (err: any) {
-            setError(err.message || 'Login failed');
+        } catch (err: unknown) {
+            if (err instanceof Error) {
+                setError(err.message || 'Login failed');
+            } else {
+                setError('Login failed');
+            }
         }
     };
 
@@ -65,7 +69,7 @@ export default function LoginPage() {
                 </form>
 
                 <div className={styles.authFooter}>
-                    Don't have an account? <Link href="/signup">Sign Up</Link>
+                    Don&apos;t have an account? <Link href="/signup">Sign Up</Link>
                 </div>
             </div>
         </div>

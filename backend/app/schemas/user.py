@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional
 from uuid import UUID
 
@@ -8,9 +8,6 @@ class UserBase(BaseModel):
     full_name: Optional[str] = None
     is_active: bool = True
     is_superuser: bool = False
-
-
-from pydantic import BaseModel, EmailStr, field_validator
 
 
 class UserCreate(UserBase):
