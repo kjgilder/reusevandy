@@ -20,8 +20,12 @@ export default function SignupPage() {
                 return;
             }
             await signup(email, password, fullName);
-        } catch (err: any) {
-            const message = err.message || 'Signup failed';
+        } catch (err: unknown) {
+            let message = 'Signup failed';
+            if (err instanceof Error) {
+                message = err.message;
+            }
+
             if (message.includes('already exists')) {
                 setError('Already has an account');
             } else {
