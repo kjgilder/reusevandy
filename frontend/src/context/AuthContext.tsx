@@ -70,8 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             body: JSON.stringify({ email, password, full_name: fullName }),
         });
 
-        // Auto-login after signup
-        await login(email, password);
+        await apiRequest('/auth/signup', {
+            method: 'POST',
+            body: JSON.stringify({ email, password, full_name: fullName }),
+        });
     };
 
     const logout = () => {

@@ -5,6 +5,7 @@ from functools import lru_cache
 class Settings(BaseSettings):
     PROJECT_NAME: str = "Reuse Vandy"
     API_V1_STR: str = "/api/v1"
+    FRONTEND_URL: str = "http://localhost:3000"
 
     # Database
     MONGODB_URL: str = "mongodb://localhost:27017"
@@ -20,6 +21,10 @@ class Settings(BaseSettings):
     AWS_SECRET_ACCESS_KEY: str = ""
     AWS_REGION: str = "us-east-1"
     S3_BUCKET_NAME: str = "reuse-vandy-uploads"
+
+    # Email
+    SENDGRID_API_KEY: str = ""
+    EMAIL_FROM: str = "noreply@reusevandy.com"
 
     model_config = {"env_file": ".env"}
 

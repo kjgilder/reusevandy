@@ -5,12 +5,15 @@ import Link from 'next/link';
 import { useAuth } from '../../context/AuthContext';
 import styles from '../page.module.css';
 
+import { useRouter } from 'next/navigation';
+
 export default function SignupPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const { signup } = useAuth();
     const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -20,6 +23,8 @@ export default function SignupPage() {
                 return;
             }
             await signup(email, password, fullName);
+            alert('Signup successful! Please check your email to verify your account.');
+            router.push('/login');
         } catch (err: unknown) {
             let message = 'Signup failed';
             if (err instanceof Error) {
