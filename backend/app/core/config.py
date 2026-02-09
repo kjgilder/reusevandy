@@ -24,6 +24,7 @@ class Settings(BaseSettings):
 
     # Email
     SENDGRID_API_KEY: str = ""
+    # TODO: Change to noreply@reusevandy.com after domain verification
     EMAIL_FROM: str = "noreply@reusevandy.com"
 
     model_config = {"env_file": ".env"}

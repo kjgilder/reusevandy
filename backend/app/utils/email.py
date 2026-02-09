@@ -25,10 +25,12 @@ def send_verification_email(email_to: str, token: str) -> None:
     )
     
     try:
+        # TODO: In production, change settings.EMAIL_FROM to a verified domain email (e.g., noreply@reusevandy.com)
+        # currently using personal email to bypass DMARC/spam filters during development.
         if settings.SENDGRID_API_KEY:
             sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
             response = sg.send(message)
-            print(f"Email sent. Status Code: {response.status_code}")
+            print(f"Email sent to {email_to}. Status Code: {response.status_code}")
         else:
             print("SENDGRID_API_KEY not set. Email not sent.")
             print(f"Simulated Email to {email_to}: {verification_link}")

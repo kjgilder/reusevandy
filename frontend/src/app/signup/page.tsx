@@ -13,13 +13,17 @@ export default function SignupPage() {
     const [fullName, setFullName] = useState('');
     const { signup } = useAuth();
     const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        setError('');
+        setLoading(true);
         try {
             if (!email.endsWith('@vanderbilt.edu')) {
                 setError('Must use a Vanderbilt email address');
+                setLoading(false);
                 return;
             }
             await signup(email, password, fullName);
@@ -36,6 +40,7 @@ export default function SignupPage() {
             } else {
                 setError(message);
             }
+            setLoading(false);
         }
     };
 
@@ -59,6 +64,7 @@ export default function SignupPage() {
                             onChange={(e) => setFullName(e.target.value)}
                             placeholder="name"
                             required
+                            disabled={loading}
                         />
                     </div>
                     <div className={styles.inputGroup}>
@@ -70,6 +76,7 @@ export default function SignupPage() {
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="email"
                             required
+                            disabled={loading}
                         />
                         <span style={{ fontSize: '11px', color: '#888' }}>Must end in @vanderbilt.edu</span>
                     </div>
@@ -82,9 +89,12 @@ export default function SignupPage() {
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="password"
                             required
+                            disabled={loading}
                         />
                     </div>
-                    <button type="submit" className={styles.button}>Sign Up</button>
+                    <button type="submit" className={styles.button} disabled={loading}>
+                        {loading ? 'Signing up...' : 'Sign Up'}
+                    </button>
                 </form>
 
                 <div className={styles.authFooter}>

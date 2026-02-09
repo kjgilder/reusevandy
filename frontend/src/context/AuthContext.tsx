@@ -69,11 +69,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             method: 'POST',
             body: JSON.stringify({ email, password, full_name: fullName }),
         });
-
-        await apiRequest('/auth/signup', {
-            method: 'POST',
-            body: JSON.stringify({ email, password, full_name: fullName }),
-        });
     };
 
     const logout = () => {
