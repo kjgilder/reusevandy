@@ -7,6 +7,7 @@ from pydantic import Field
 
 from app.models.user import User
 
+
 class Category(str, Enum):
     CLOTHING = "Clothing"
     FURNITURE = "Furniture"
@@ -15,10 +16,12 @@ class Category(str, Enum):
     TICKETS = "Tickets"
     OTHER = "Other"
 
+
 class ListingStatus(str, Enum):
     AVAILABLE = "available"
     PENDING = "pending"
     SOLD = "sold"
+
 
 class Listing(Document):
     id: UUID = Field(default_factory=uuid4)
@@ -26,7 +29,7 @@ class Listing(Document):
     description: str
     price: float
     category: Category
-    images: List[str] = [] # List of Vercel Blob URLs
+    images: List[str] = []  # List of Vercel Blob URLs
     seller: Link[User]
     status: ListingStatus = ListingStatus.AVAILABLE
     created_at: datetime = Field(default_factory=datetime.utcnow)

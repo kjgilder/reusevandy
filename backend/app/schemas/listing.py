@@ -5,6 +5,7 @@ from pydantic import BaseModel
 from app.models.listing import Category, ListingStatus
 from app.schemas.user import UserOut
 
+
 class ListingBase(BaseModel):
     title: str
     description: str
@@ -12,8 +13,10 @@ class ListingBase(BaseModel):
     category: Category
     images: List[str] = []
 
+
 class ListingCreate(ListingBase):
     pass
+
 
 class ListingUpdate(BaseModel):
     title: Optional[str] = None
@@ -22,6 +25,7 @@ class ListingUpdate(BaseModel):
     category: Optional[Category] = None
     images: Optional[List[str]] = None
     status: Optional[ListingStatus] = None
+
 
 class ListingOut(ListingBase):
     id: UUID

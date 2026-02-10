@@ -10,6 +10,7 @@ from app.schemas.listing import ListingCreate, ListingOut, ListingUpdate
 
 router = APIRouter()
 
+
 @router.post("/", response_model=ListingOut)
 async def create_listing(
     listing_in: ListingCreate,
@@ -18,14 +19,12 @@ async def create_listing(
     """
     Create a new listing.
     """
-    listing = Listing(
-        **listing_in.dict(),
-        seller=current_user
-    )
+    listing = Listing(**listing_in.dict(), seller=current_user)
     await listing.insert()
     # Fetch again to populate links if needed, though simpler just to return constructed
     # But for UserOut nested model, we might need manual construction or fetch
     return listing
+
 
 @router.get("/", response_model=List[ListingOut])
 async def read_listings(
@@ -35,23 +34,25 @@ async def read_listings(
     category: Optional[Category] = None,
     min_price: Optional[float] = None,
     max_price: Optional[float] = None,
-    sort_by: Optional[str] = Query("newest", enum=["newest", "oldest", "price_asc", "price_desc"]),
+    sort_by: Optional[str] = Query(
+        "newest", enum=["newest", "oldest", "price_asc", "price_desc"]
+    ),
 ) -> Any:
     """
     Retrieve listings with filters.
     """
     query = Listing.find(Listing.status == ListingStatus.AVAILABLE)
-    
+
     if search:
         # Simple regex or text search if indexed (using regex for simplicity now)
         query = query.find({"title": {"$regex": search, "$options": "i"}})
-    
+
     if category:
         query = query.find(Listing.category == category)
-        
+
     if min_price is not None:
         query = query.find(Listing.price >= min_price)
-        
+
     if max_price is not None:
         query = query.find(Listing.price <= max_price)
 
@@ -66,12 +67,13 @@ async def read_listings(
         query = query.sort("-price")
 
     listings = await query.skip(skip).limit(limit).to_list()
-    
+
     # We need to fetch related seller data for response model
     for listing in listings:
         await listing.fetch_link(Listing.seller)
-        
+
     return listings
+
 
 @router.get("/{id}", response_model=ListingOut)
 async def read_listing(id: UUID) -> Any:
@@ -81,9 +83,10 @@ async def read_listing(id: UUID) -> Any:
     listing = await Listing.get(id)
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
-        
+
     await listing.fetch_link(Listing.seller)
     return listing
+
 
 @router.put("/{id}", response_model=ListingOut)
 async def update_listing(
@@ -97,15 +100,16 @@ async def update_listing(
     listing = await Listing.get(id)
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
-        
+
     await listing.fetch_link(Listing.seller)
     if listing.seller.id != current_user.id and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")
 
     update_data = listing_in.dict(exclude_unset=True)
     await listing.set(update_data)
-    
+
     return listing
+
 
 @router.delete("/{id}")
 async def delete_listing(
@@ -118,7 +122,7 @@ async def delete_listing(
     listing = await Listing.get(id)
     if not listing:
         raise HTTPException(status_code=404, detail="Listing not found")
-        
+
     await listing.fetch_link(Listing.seller)
     if listing.seller.id != current_user.id and not current_user.is_superuser:
         raise HTTPException(status_code=403, detail="Not enough permissions")

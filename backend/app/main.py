@@ -15,8 +15,7 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     # Startup: Connect to DB
     app.mongodb_client = AsyncIOMotorClient(
-        settings.MONGODB_URL,
-        uuidRepresentation="standard"
+        settings.MONGODB_URL, uuidRepresentation="standard"
     )
     app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
 
@@ -35,7 +34,9 @@ app = FastAPI(
 )
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
-app.include_router(listings.router, prefix=f"{settings.API_V1_STR}/listings", tags=["listings"])
+app.include_router(
+    listings.router, prefix=f"{settings.API_V1_STR}/listings", tags=["listings"]
+)
 
 # Set all CORS enabled origins
 app.add_middleware(
