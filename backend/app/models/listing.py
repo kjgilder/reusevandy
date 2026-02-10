@@ -1,6 +1,6 @@
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional
+from typing import List
 from uuid import UUID, uuid4
 from beanie import Document, Link
 from pydantic import Field
