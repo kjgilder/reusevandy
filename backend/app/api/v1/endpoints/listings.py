@@ -1,7 +1,7 @@
 from typing import Any, List, Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query
-from beanie import PydanticObjectId
+
 
 from app.api import deps
 from app.models.user import User
