@@ -5,7 +5,8 @@ from contextlib import asynccontextmanager
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
 from app.models.user import User
-from app.api.v1.endpoints import auth
+from app.models.listing import Listing
+from app.api.v1.endpoints import auth, listings
 
 settings = get_settings()
 
@@ -13,10 +14,12 @@ settings = get_settings()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Connect to DB
-    app.mongodb_client = AsyncIOMotorClient(settings.MONGODB_URL)
+    app.mongodb_client = AsyncIOMotorClient(
+        settings.MONGODB_URL, uuidRepresentation="standard"
+    )
     app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
 
-    await init_beanie(database=app.mongodb, document_models=[User])
+    await init_beanie(database=app.mongodb, document_models=[User, Listing])
     print("Connected to MongoDB")
     yield
     # Shutdown
@@ -31,6 +34,9 @@ app = FastAPI(
 )
 
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
+app.include_router(
+    listings.router, prefix=f"{settings.API_V1_STR}/listings", tags=["listings"]
+)
 
 # Set all CORS enabled origins
 app.add_middleware(

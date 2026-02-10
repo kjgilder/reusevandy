@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
 
+    # Email
+    SENDGRID_API_KEY: str = ""
+    EMAIL_FROM: str = "noreply@reusevandy.com"
+
     # AWS S3 (Placeholders)
     AWS_ACCESS_KEY_ID: str = ""
     AWS_SECRET_ACCESS_KEY: str = ""
