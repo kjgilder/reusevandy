@@ -1,55 +1,78 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Navbar from '../../components/Navbar';
 import BottomNav from '../../components/BottomNav';
 import FilterBar from '../../components/FilterBar';
 import ProductCard from '../../components/ProductCard';
-import { Search } from 'lucide-react';
-
-const MOCK_PRODUCTS = [
-    {
-        id: 1,
-        title: "IKEA Desk - Excellent Condition",
-        price: 45,
-        description: "Moving out! Selling my desk that I used for 2 years. Perfect for dorm rooms.",
-        seller: "Sarah Johnson",
-        timeAgo: "2 hours ago",
-        category: "Furniture"
-    },
-    {
-        id: 2,
-        title: "Mini Fridge - Perfect for Dorms",
-        price: 80,
-        description: "Compact mini fridge, barely used. Great for keeping snacks and drinks cold.",
-        seller: "Mike Chen",
-        timeAgo: "5 hours ago",
-        category: "Electronics"
-    },
-    {
-        id: 3,
-        title: "2x Drake Concert Tickets - Floor Seats",
-        price: 150,
-        description: "Can't make it to the concert anymore. Selling 2 tickets together. Great seats!",
-        seller: "Emily Davis",
-        timeAgo: "1 day ago",
-        category: "Tickets"
-    },
-    {
-        id: 4,
-        title: "Calculus Textbook",
-        price: 30,
-        description: "Calculus: Early Transcendentals. Good condition, no highlighting.",
-        seller: "John Doe",
-        timeAgo: "1 day ago",
-        category: "Textbooks"
-    }
-];
+import ListingModal from '../../components/ListingModal';
+import { Search, Loader2 } from 'lucide-react';
+import { getListings } from '../../utils/api';
+import { useAuth } from '../../context/AuthContext';
 
 export default function HomePage() {
+    const [listings, setListings] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const { user } = useAuth();
+    const router = useRouter();
+
+    const fetchListings = async () => {
+        try {
+            const filters: any = {};
+            if (searchTerm) filters.search = searchTerm;
+            if (selectedCategory !== 'All') filters.category = selectedCategory;
+
+            const data = await getListings(filters);
+            setListings(data);
+        } catch (error) {
+            console.error('Failed to fetch listings:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchListings();
+    }, [searchTerm, selectedCategory]);
+
+    // Simple time ago helper
+    const getTimeAgo = (dateString: string) => {
+        const date = new Date(dateString);
+        const now = new Date();
+        const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+        let interval = seconds / 31536000;
+        if (interval > 1) return Math.floor(interval) + " years ago";
+        interval = seconds / 2592000;
+        if (interval > 1) return Math.floor(interval) + " months ago";
+        interval = seconds / 86400;
+        if (interval > 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval > 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval > 1) return Math.floor(interval) + " minutes ago";
+        return Math.floor(seconds) + " seconds ago";
+    };
+
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f9f9f9', paddingBottom: '80px' }}>
-            <Navbar />
+            <Navbar onSellClick={() => {
+                if (!user) {
+                    router.push('/login');
+                    return;
+                }
+                setIsModalOpen(true);
+            }} />
+
+            <ListingModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                onSuccess={fetchListings}
+            />
 
             <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px' }}>
                 {/* Search Bar */}
@@ -58,6 +81,8 @@ export default function HomePage() {
                     <input
                         type="text"
                         placeholder="Search items..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
                         style={{
                             width: '100%',
                             padding: '12px 12px 12px 40px',
@@ -71,27 +96,47 @@ export default function HomePage() {
 
                 {/* Filters */}
                 <div style={{ marginBottom: '24px' }}>
-                    <FilterBar />
+                    <div style={{ marginBottom: '24px' }}>
+                        <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+                    </div>
                 </div>
 
                 {/* Product Grid */}
-                <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '24px'
-                }}>
-                    {MOCK_PRODUCTS.map(product => (
-                        <ProductCard
-                            key={product.id}
-                            title={product.title}
-                            price={product.price}
-                            description={product.description}
-                            seller={product.seller}
-                            timeAgo={product.timeAgo}
-                            category={product.category}
-                        />
-                    ))}
-                </div>
+                {loading ? (
+                    <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
+                        <Loader2 className="animate-spin" size={32} color="#8B7D5B" style={{ animation: 'spin 1s linear infinite' }} />
+                        <style jsx>{`
+                            @keyframes spin {
+                                from { transform: rotate(0deg); }
+                                to { transform: rotate(360deg); }
+                            }
+                        `}</style>
+                    </div>
+                ) : (
+                    <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '24px'
+                    }}>
+                        {listings.map(listing => (
+                            <ProductCard
+                                key={listing.id}
+                                title={listing.title}
+                                price={listing.price}
+                                description={listing.description}
+                                seller={listing.seller?.full_name || listing.seller?.email || 'Unknown Seller'}
+                                timeAgo={getTimeAgo(listing.created_at)}
+                                category={listing.category}
+                                image={listing.images && listing.images.length > 0 ? listing.images[0] : undefined}
+                            />
+                        ))}
+                        {listings.length === 0 && (
+                            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#666' }}>
+                                No items found. Be the first to sell something!
+                            </div>
+                        )}
+                    </div>
+                )}
             </main>
 
             <BottomNav />

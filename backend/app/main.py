@@ -33,9 +33,20 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Mount static files
+from fastapi.staticfiles import StaticFiles
+import os
+# Ensure directory exists just in case
+os.makedirs("app/static/images", exist_ok=True)
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
 app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["auth"])
 app.include_router(
     listings.router, prefix=f"{settings.API_V1_STR}/listings", tags=["listings"]
+)
+from app.api.v1.endpoints import utils
+app.include_router(
+    utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["utils"]
 )
 
 # Set all CORS enabled origins
