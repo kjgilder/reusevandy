@@ -48,7 +48,6 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                 images: imageUrls
             };
 
-            // @ts-expect-error casting needed until API types are strict
             await createListing(listingData);
 
             onSuccess();
@@ -161,14 +160,14 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                                     width: '100%',
                                     padding: '10px 12px',
                                     borderRadius: '6px',
-                                    border: '1px solid #d1d5db',
+                                    border: '1px solid var(--vandy-sand)',
                                     fontSize: '16px',
-                                    outlineColor: '#8B7D5B'
+                                    outlineColor: 'var(--vandy-gold)'
                                 }}
                             />
                         </div>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Category</label>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: 'var(--vandy-black)' }}>Category</label>
                             <select
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
@@ -176,10 +175,10 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                                     width: '100%',
                                     padding: '10px 12px',
                                     borderRadius: '6px',
-                                    border: '1px solid #d1d5db',
+                                    border: '1px solid var(--vandy-sand)',
                                     fontSize: '16px',
                                     backgroundColor: 'white',
-                                    outlineColor: '#8B7D5B'
+                                    outlineColor: 'var(--vandy-gold)'
                                 }}
                             >
                                 {CATEGORIES.map(cat => (
@@ -190,7 +189,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                     </div>
 
                     <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Description</label>
+                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: 'var(--vandy-black)' }}>Description</label>
                         <textarea
                             required
                             value={description}
@@ -201,10 +200,10 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                                 width: '100%',
                                 padding: '10px 12px',
                                 borderRadius: '6px',
-                                border: '1px solid #d1d5db',
+                                border: '1px solid var(--vandy-sand)',
                                 fontSize: '16px',
                                 resize: 'vertical',
-                                outlineColor: '#8B7D5B',
+                                outlineColor: 'var(--vandy-gold)',
                                 fontFamily: 'inherit'
                             }}
                         />
@@ -217,12 +216,12 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                             style={{
                                 width: '100%',
                                 padding: '12px',
-                                backgroundColor: '#8B7D5B',
-                                color: 'white',
+                                backgroundColor: 'var(--vandy-gold)',
+                                color: 'var(--vandy-black)',
                                 border: 'none',
                                 borderRadius: '6px',
                                 fontSize: '16px',
-                                fontWeight: 600,
+                                fontWeight: 700,
                                 cursor: loading ? 'not-allowed' : 'pointer',
                                 opacity: loading ? 0.7 : 1,
                                 display: 'flex',
