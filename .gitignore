@@ -7,3 +7,7 @@ backend/__pycache__/
 .vscode/
 frontend/node_modules/
 frontend/.next/
+frontend/out/
+backend/fix_image.py
+backend/fix_image_direct.py
+backend/backend.log
