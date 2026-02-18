@@ -24,9 +24,10 @@ export default function FilterBar({ selectedCategory, onSelectCategory }: Filter
                     style={{
                         padding: '6px 12px',
                         borderRadius: '16px',
-                        border: '1px solid #eee',
-                        backgroundColor: selectedCategory === cat ? '#8B7D5B' : '#fff', // Use gold for active
-                        color: selectedCategory === cat ? '#fff' : '#333',
+                        border: selectedCategory === cat ? '1px solid var(--vandy-gold)' : '1px solid var(--vandy-sand)',
+                        backgroundColor: selectedCategory === cat ? 'var(--vandy-gold)' : '#fff',
+                        color: selectedCategory === cat ? 'var(--vandy-black)' : 'var(--vandy-black)',
+                        fontWeight: selectedCategory === cat ? '600' : '400',
                         fontSize: '13px',
                         cursor: 'pointer',
                         whiteSpace: 'nowrap',
