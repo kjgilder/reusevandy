@@ -70,11 +70,11 @@ export default function ProductCard({ title, price, description, seller, timeAgo
             </div>
             <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                    <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 4px 0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</h3>
-                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: '#8B7D5B' }}>${price}</span>
+                    <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 4px 0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--vandy-black)' }}>{title}</h3>
+                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--vandy-gold)' }}>${price}</span>
                 </div>
-                <p style={{ fontSize: '13px', color: '#666', margin: 0, lineHeight: '1.4', height: '36px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{description}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '11px', color: '#999' }}>
+                <p style={{ fontSize: '13px', color: 'var(--vandy-grey)', margin: 0, lineHeight: '1.4', height: '36px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{description}</p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '11px', color: 'var(--vandy-grey)' }}>
                     <span>{seller}</span>
                     <span>{timeAgo}</span>
                 </div>

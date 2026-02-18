@@ -73,7 +73,7 @@ export default function HomePage() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: '#f9f9f9', paddingBottom: '80px' }}>
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--vandy-cream)', paddingBottom: '80px' }}>
             <Navbar onSellClick={() => {
                 if (!user) {
                     router.push('/login');
@@ -91,7 +91,7 @@ export default function HomePage() {
             <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px' }}>
                 {/* Search Bar */}
                 <div style={{ position: 'relative', marginBottom: '16px' }}>
-                    <Search size={20} color="#999" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                    <Search size={20} color="var(--vandy-grey)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
                     <input
                         type="text"
                         placeholder="Search items..."
@@ -101,9 +101,10 @@ export default function HomePage() {
                             width: '100%',
                             padding: '12px 12px 12px 40px',
                             borderRadius: '8px',
-                            border: '1px solid #ddd',
+                            border: '1px solid var(--vandy-sand)',
                             fontSize: '16px',
-                            backgroundColor: '#f5f5f5'
+                            backgroundColor: '#fff',
+                            color: 'var(--vandy-black)'
                         }}
                     />
                 </div>
@@ -118,7 +119,7 @@ export default function HomePage() {
                 {/* Product Grid */}
                 {loading ? (
                     <div style={{ display: 'flex', justifyContent: 'center', padding: '40px' }}>
-                        <Loader2 className="animate-spin" size={32} color="#8B7D5B" style={{ animation: 'spin 1s linear infinite' }} />
+                        <Loader2 className="animate-spin" size={32} color="var(--vandy-gold)" style={{ animation: 'spin 1s linear infinite' }} />
                         <style jsx>{`
                             @keyframes spin {
                                 from { transform: rotate(0deg); }

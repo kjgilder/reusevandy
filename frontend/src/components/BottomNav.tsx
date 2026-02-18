@@ -16,15 +16,15 @@ export default function BottomNav() {
             right: 0,
             zIndex: 100
         }}>
-            <Link href="/home" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#8B7D5B' }}>
+            <Link href="/home" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--vandy-gold)' }}>
                 <Home size={24} />
-                <span style={{ fontSize: '10px' }}>Browse</span>
+                <span style={{ fontSize: '10px', fontWeight: 'bold' }}>Browse</span>
             </Link>
-            <Link href="/messages" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#666' }}>
+            <Link href="/messages" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--vandy-grey)' }}>
                 <MessageSquare size={24} />
                 <span style={{ fontSize: '10px' }}>Messages</span>
             </Link>
-            <Link href="/profile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: '#666' }}>
+            <Link href="/profile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--vandy-grey)' }}>
                 <User size={24} />
                 <span style={{ fontSize: '10px' }}>My Listings</span>
             </Link>
