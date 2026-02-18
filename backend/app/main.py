@@ -13,6 +13,7 @@ from app.api.v1.endpoints import auth, listings, utils
 
 settings = get_settings()
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Startup: Connect to DB
@@ -23,10 +24,10 @@ async def lifespan(app: FastAPI):
 
     await init_beanie(database=app.mongodb, document_models=[User, Listing])
     print("Connected to MongoDB")
-    
+
     # Ensure directory exists just in case
     os.makedirs("app/static/images", exist_ok=True)
-    
+
     yield
     # Shutdown
     app.mongodb_client.close()
@@ -45,9 +46,7 @@ app.include_router(auth.router, prefix=f"{settings.API_V1_STR}/auth", tags=["aut
 app.include_router(
     listings.router, prefix=f"{settings.API_V1_STR}/listings", tags=["listings"]
 )
-app.include_router(
-    utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["utils"]
-)
+app.include_router(utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["utils"])
 
 # Set all CORS enabled origins
 app.add_middleware(
