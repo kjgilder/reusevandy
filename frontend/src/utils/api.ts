@@ -12,7 +12,7 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   // Only set Content-Type to application/json if body is not FormData and Content-Type is not already set
   const hasContentType = Object.keys(headers).some(key => key.toLowerCase() === 'content-type');
   if (!(options.body instanceof FormData) && !hasContentType) {
-    // @ts-ignore
+    // @ts-expect-error headers type doesn't explicitly allow string indexing but it works
     headers['Content-Type'] = 'application/json';
   }
 
@@ -29,15 +29,15 @@ export async function apiRequest(endpoint: string, options: RequestInit = {}) {
   return response.json();
 }
 
-export async function getListings(filters: any = {}) {
+export async function getListings(filters: Record<string, string | number | undefined> = {}) {
   const params = new URLSearchParams();
   Object.keys(filters).forEach(key => {
-    if (filters[key]) params.append(key, filters[key]);
+    if (filters[key]) params.append(key, String(filters[key]));
   });
   return apiRequest(`/listings/?${params.toString()}`);
 }
 
-export async function createListing(data: any) {
+export async function createListing(data: Record<string, unknown>) {
   return apiRequest('/listings/', {
     method: 'POST',
     body: JSON.stringify(data),

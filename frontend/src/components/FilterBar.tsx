@@ -1,7 +1,5 @@
 'use client';
 
-import { useState } from 'react';
-
 const categories = ['All', 'Furniture', 'Electronics', 'Books', 'Tickets', 'Clothing', 'Other'];
 
 interface FilterBarProps {

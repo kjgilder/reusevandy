@@ -2,7 +2,6 @@
 import shutil
 import uuid
 from pathlib import Path
-from tempfile import NamedTemporaryFile
 from typing import Any
 
 from fastapi import APIRouter, File, UploadFile

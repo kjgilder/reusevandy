@@ -11,8 +11,22 @@ import { Search, Loader2 } from 'lucide-react';
 import { getListings } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 
+interface Listing {
+    id: string;
+    title: string;
+    description: string;
+    price: number;
+    category: string;
+    images?: string[];
+    seller?: {
+        full_name?: string;
+        email?: string;
+    };
+    created_at: string;
+}
+
 export default function HomePage() {
-    const [listings, setListings] = useState<any[]>([]);
+    const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -20,9 +34,9 @@ export default function HomePage() {
     const { user } = useAuth();
     const router = useRouter();
 
-    const fetchListings = async () => {
+    const fetchListings = React.useCallback(async () => {
         try {
-            const filters: any = {};
+            const filters: Record<string, string> = {};
             if (searchTerm) filters.search = searchTerm;
             if (selectedCategory !== 'All') filters.category = selectedCategory;
 
@@ -33,11 +47,11 @@ export default function HomePage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [searchTerm, selectedCategory]);
 
     useEffect(() => {
         fetchListings();
-    }, [searchTerm, selectedCategory]);
+    }, [fetchListings]);
 
     // Simple time ago helper
     const getTimeAgo = (dateString: string) => {
