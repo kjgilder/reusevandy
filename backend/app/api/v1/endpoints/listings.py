@@ -45,7 +45,15 @@ async def read_listings(
 
     if search:
         # Simple regex or text search if indexed (using regex for simplicity now)
-        query = query.find({"title": {"$regex": search, "$options": "i"}})
+        # Search in title OR description
+        query = query.find(
+            {
+                "$or": [
+                    {"title": {"$regex": search, "$options": "i"}},
+                    {"description": {"$regex": search, "$options": "i"}},
+                ]
+            }
+        )
 
     if category:
         query = query.find(Listing.category == category)
