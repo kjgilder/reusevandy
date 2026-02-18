@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '../../context/AuthContext';
 import styles from '../page.module.css';
 
@@ -37,6 +38,15 @@ export default function SignupPage() {
     return (
         <div className={styles.authContainer}>
             <div className={styles.authHeader}>
+                <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 24px' }}>
+                    <Image
+                        src="/assets/vu-logo-gold.png"
+                        alt="Vanderbilt Logo"
+                        fill
+                        style={{ objectFit: 'contain' }}
+                        priority
+                    />
+                </div>
                 <h1 className={styles.authTitle}>Reuse <span>Vandy</span></h1>
                 <p className={styles.authSubtitle}>Create your account</p>
             </div>

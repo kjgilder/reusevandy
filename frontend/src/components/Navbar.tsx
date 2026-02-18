@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import { Plus } from 'lucide-react';
 
 interface NavbarProps {
@@ -11,34 +12,32 @@ export default function Navbar({ onSellClick }: NavbarProps) {
             justifyContent: 'space-between',
             alignItems: 'center',
             padding: '16px 24px',
-            backgroundColor: '#fff',
-            borderBottom: '1px solid #eee',
+            backgroundColor: 'var(--vandy-cream)', // Cream background
+            borderBottom: '1px solid var(--vandy-sand)', // Sand border
             position: 'sticky',
             top: 0,
             zIndex: 100
         }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <div style={{
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: '#8B7D5B', // Bronze/Gold color for logo placeholder
-                    borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontWeight: 'bold'
-                }}>V</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                <div style={{ position: 'relative', width: '90px', height: '90px' }}>
+                    <Image
+                        src="/assets/vu-logo-gold.png"
+                        alt="Vanderbilt Logo"
+                        fill
+                        style={{ objectFit: 'contain' }}
+                        priority
+                    />
+                </div>
                 <div>
-                    <h1 style={{ fontSize: '16px', fontWeight: 'bold', margin: 0 }}>Vandy Marketplace</h1>
-                    <p style={{ fontSize: '12px', color: '#666', margin: 0 }}>For Vanderbilt Students</p>
+                    <h1 style={{ fontSize: '28px', fontWeight: 'bold', margin: 0, color: 'var(--vandy-black)' }}>ReUse Vandy</h1>
+                    <p style={{ fontSize: '16px', color: 'var(--vandy-grey)', margin: 0 }}>Vanderbilt Marketplace</p>
                 </div>
             </div>
             <button
                 onClick={onSellClick}
                 style={{
-                    backgroundColor: '#8B7D5B',
-                    color: 'white',
+                    backgroundColor: 'var(--vandy-gold)', // Flat Gold
+                    color: 'var(--vandy-black)', // Black text on gold
                     border: 'none',
                     borderRadius: '4px',
                     padding: '8px 16px',
@@ -46,8 +45,12 @@ export default function Navbar({ onSellClick }: NavbarProps) {
                     alignItems: 'center',
                     gap: '8px',
                     cursor: 'pointer',
-                    fontWeight: 500
-                }}>
+                    fontWeight: 600,
+                    transition: 'opacity 0.2s'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
+                onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
+            >
                 <Plus size={16} />
                 Sell Item
             </button>
