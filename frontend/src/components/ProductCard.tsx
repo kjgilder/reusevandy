@@ -1,5 +1,7 @@
 import { BASE_URL } from '../utils/api';
 
+import Image from 'next/image';
+
 interface ProductProps {
     title: string;
     price: number;
@@ -40,10 +42,12 @@ export default function ProductCard({ title, price, description, seller, timeAgo
                 overflow: 'hidden'
             }}>
                 {imageUrl ? (
-                    <img
+                    <Image
                         src={imageUrl}
                         alt={title}
-                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                        fill
+                        style={{ objectFit: 'cover' }}
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 ) : (
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#aaa' }}>
