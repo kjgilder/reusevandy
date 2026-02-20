@@ -19,11 +19,8 @@ class Settings(BaseSettings):
     SENDGRID_API_KEY: str = ""
     EMAIL_FROM: str = "noreply@reusevandy.com"
 
-    # AWS S3 (Placeholders)
-    AWS_ACCESS_KEY_ID: str = ""
-    AWS_SECRET_ACCESS_KEY: str = ""
-    AWS_REGION: str = "us-east-1"
-    S3_BUCKET_NAME: str = "reuse-vandy-uploads"
+    # Vercel Blob Storage
+    BLOB_READ_WRITE_TOKEN: str = ""
 
     model_config = {"env_file": ".env"}
 
