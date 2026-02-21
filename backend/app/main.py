@@ -51,7 +51,7 @@ app.include_router(utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["u
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Frontend URL
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
