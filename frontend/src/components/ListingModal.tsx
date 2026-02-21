@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
-import { X, Loader2 } from 'lucide-react';
-import { createListing } from '../utils/api';
+import { X, Upload, Loader2 } from 'lucide-react';
+import { createListing, uploadListingImage } from '../utils/api';
 
 interface ListingModalProps {
     isOpen: boolean;
@@ -23,7 +23,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [description, setDescription] = useState('');
-    // const [imageFile, setImageFile] = useState<File | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -36,9 +36,9 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
 
         try {
             const imageUrls: string[] = [];
-            // Handle image uploads if we had them
-            // const imageUrl = await uploadImage(file);
-            // imageUrls.push(imageUrl);
+
+            // We will upload the image *after* the listing is created, 
+            // but we need to pass an empty array initially
 
             const listingData = {
                 title,
@@ -48,7 +48,12 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
                 images: imageUrls
             };
 
-            await createListing(listingData);
+            const newListing = await createListing(listingData);
+
+            // If an image was provided, upload it to the newly created listing
+            if (imageFile && newListing.id) {
+                await uploadListingImage(newListing.id, imageFile);
+            }
 
             onSuccess();
             onClose();
@@ -57,7 +62,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
             setPrice('');
             setCategory(CATEGORIES[0]);
             setDescription('');
-            // setImageFile(null);
+            setImageFile(null);
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message || 'Failed to create listing');
@@ -119,12 +124,44 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
 
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-                    {/* Image Upload - Temporarily Disabled
+                    {/* Image Upload */}
                     <div style={{ marginBottom: '8px' }}>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Photo</label>
-                        ...
+                        <div style={{
+                            border: '2px dashed #d1d5db',
+                            borderRadius: '8px',
+                            padding: '24px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            backgroundColor: '#f9fafb',
+                            transition: 'all 0.2s'
+                        }}
+                            onClick={() => document.getElementById('file-upload')?.click()}
+                        >
+                            {imageFile ? (
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#059669' }}>
+                                    <span style={{ fontWeight: 500 }}>{imageFile.name}</span>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); setImageFile(null); }}
+                                        style={{ border: 'none', background: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
+                                    >Change</button>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
+                                    <Upload size={24} />
+                                    <span>Click to upload photo</span>
+                                </div>
+                            )}
+                            <input
+                                id="file-upload"
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => e.target.files && setImageFile(e.target.files[0])}
+                            />
+                        </div>
                     </div>
-                    */}
 
                     <div>
                         <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Title</label>

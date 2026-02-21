@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://localhost:8000';
+export const BASE_URL = 'http://127.0.0.1:8000';
 const API_URL = `${BASE_URL}/api/v1`;
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
@@ -44,10 +44,10 @@ export async function createListing(data: Record<string, unknown>) {
   });
 }
 
-export async function uploadImage(file: File) {
+export async function uploadListingImage(listingId: string, file: File) {
   const formData = new FormData();
   formData.append('file', file);
-  return apiRequest('/utils/upload', {
+  return apiRequest(`/listings/${listingId}/images`, {
     method: 'POST',
     body: formData,
   });
