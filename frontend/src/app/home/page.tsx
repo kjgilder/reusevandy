@@ -88,24 +88,26 @@ export default function HomePage() {
                 onSuccess={fetchListings}
             />
 
-            <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '16px' }}>
+            <main className={styles.homeMain}>
                 {/* Search Bar */}
-                <div style={{ position: 'relative', marginBottom: '16px' }}>
-                    <Search size={20} color="var(--vandy-grey)" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                <div className={styles.searchContainer}>
+                    <Search 
+                        size={20} 
+                        color="var(--vandy-grey)" 
+                        style={{ 
+                            position: 'absolute', 
+                            left: '16px', 
+                            top: '50%', 
+                            transform: 'translateY(-50%)',
+                            zIndex: 1
+                        }} 
+                    />
                     <input
                         type="text"
-                        placeholder="Search items..."
+                        placeholder="Search for textbooks, dorm gear, electronics..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        style={{
-                            width: '100%',
-                            padding: '12px 12px 12px 40px',
-                            borderRadius: '8px',
-                            border: '1px solid var(--vandy-sand)',
-                            fontSize: '16px',
-                            backgroundColor: '#fff',
-                            color: 'var(--vandy-black)'
-                        }}
+                        className={styles.searchInput}
                     />
                 </div>
 
