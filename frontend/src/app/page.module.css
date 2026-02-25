@@ -1,29 +1,10 @@
 .page {
-  /* ... existing vars ... */
-  --text-primary: var(--vandy-black);
-  --text-secondary: var(--vandy-grey);
-
-  --button-primary-hover: #b89632;
-  --button-secondary-hover: #f2f2f2;
-  --button-secondary-border: var(--vandy-gold);
-  --gold: var(--vandy-gold);
-
   display: flex;
   min-height: 100vh;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-geist-sans);
-  background-color: var(--vandy-cream);
+  background-color: var(--background);
 }
-
-.main {
-  /* ... existing styles ... */
-  background-color: var(--vandy-white);
-  /* Was foreground (black?), usually main container is white */
-  /* ... */
-}
-
-/* ... intro styles ... */
 
 .authContainer {
   display: flex;
@@ -31,21 +12,27 @@
   min-height: 100vh;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background-color: var(--vandy-cream);
+  padding: 40px 24px;
+  background-color: var(--background);
   gap: 32px;
 }
 
 .authHeader {
   text-align: center;
-  color: var(--vandy-black);
+  color: var(--foreground);
 }
 
 .authTitle {
-  font-size: 40px;
+  font-size: 48px;
   font-weight: 800;
   margin-bottom: 8px;
+  letter-spacing: -0.02em;
   color: var(--vandy-black);
+  text-transform: uppercase;
+}
+
+[data-theme='dark'] .authTitle {
+  color: var(--vandy-white);
 }
 
 .authTitle span {
@@ -53,45 +40,40 @@
 }
 
 .authSubtitle {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 500;
   color: var(--vandy-grey);
 }
 
 .authCard {
-  background-color: var(--vandy-white);
-  padding: 40px;
-  border-radius: 12px;
+  background-color: var(--card-bg);
+  padding: 48px;
+  border-radius: 16px;
   width: 100%;
-  max-width: 440px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+  max-width: 460px;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--input-border);
 }
 
 .authCardTitle {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
-  margin-bottom: 24px;
-  color: var(--vandy-black);
+  margin-bottom: 32px;
+  color: var(--foreground);
 }
 
 .authFooter {
-  margin-top: 24px;
+  margin-top: 32px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--vandy-grey);
 }
 
 .authFooter a {
-  color: var(--gold);
+  color: var(--vandy-gold);
   font-weight: 600;
   text-decoration: none;
-  margin-left: 4px;
-}
-
-.title {
-  font-size: 32px;
-  font-weight: 700;
-  margin-bottom: 32px;
-  color: var(--text-primary);
+  margin-left: 6px;
 }
 
 .form {
@@ -99,49 +81,99 @@
   flex-direction: column;
   gap: 24px;
   width: 100%;
-  max-width: 400px;
 }
 
 .inputGroup {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .inputGroup label {
   font-size: 14px;
-  font-weight: 500;
-  color: var(--text-primary);
+  font-weight: 600;
+  color: var(--foreground);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .inputGroup input {
-  padding: 12px;
-  border-radius: 4px;
-  border: 1px solid var(--text-secondary);
-  background: var(--background);
-  color: var(--text-primary);
+  padding: 14px 16px;
+  border-radius: 8px;
+  border: 2px solid var(--input-border);
+  background: var(--input-bg);
+  color: var(--foreground);
   font-size: 16px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.inputGroup input:focus {
+  outline: none;
+  border-color: var(--vandy-gold);
+  box-shadow: 0 0 0 4px rgba(207, 174, 112, 0.1);
 }
 
 .button {
-  background: var(--gold);
-  color: var(--background);
-  padding: 12px;
-  border-radius: 4px;
+  background: var(--primary-button);
+  color: var(--primary-button-text);
+  padding: 16px;
+  border-radius: 8px;
   border: none;
   font-weight: 700;
   font-size: 16px;
   cursor: pointer;
-  transition: background 0.2s;
-  margin-top: 16px;
+  transition: transform 0.1s, opacity 0.2s, background-color 0.2s;
+  margin-top: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .button:hover {
-  background: var(--button-primary-hover);
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+.button:active {
+  transform: translateY(0);
 }
 
 .error {
+  background-color: rgba(255, 68, 68, 0.1);
   color: #ff4444;
+  padding: 12px;
+  border-radius: 8px;
   font-size: 14px;
   text-align: center;
+  border: 1px solid rgba(255, 68, 68, 0.2);
+}
+
+/* Homepage specific improvements */
+.homeMain {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.searchContainer {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 16px 16px 16px 48px;
+  border-radius: 12px;
+  border: 2px solid var(--input-border);
+  font-size: 16px;
+  background-color: var(--input-bg);
+  color: var(--foreground);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--vandy-gold);
+  box-shadow: var(--shadow-md);
 }
