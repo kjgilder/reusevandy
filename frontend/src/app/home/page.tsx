@@ -10,6 +10,7 @@ import ListingModal from '../../components/ListingModal';
 import { Search, Loader2 } from 'lucide-react';
 import { getListings } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import styles from '../page.module.css';
 
 interface Listing {
     id: string;
@@ -55,9 +56,12 @@ export default function HomePage() {
 
     // Simple time ago helper
     const getTimeAgo = (dateString: string) => {
-        const date = new Date(dateString);
+        const safeDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+        const date = new Date(safeDateString);
         const now = new Date();
         const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+        if (seconds <= 0) return "Just now";
 
         let interval = seconds / 31536000;
         if (interval > 1) return Math.floor(interval) + " years ago";
@@ -91,16 +95,16 @@ export default function HomePage() {
             <main className={styles.homeMain}>
                 {/* Search Bar */}
                 <div className={styles.searchContainer}>
-                    <Search 
-                        size={20} 
-                        color="var(--vandy-grey)" 
-                        style={{ 
-                            position: 'absolute', 
-                            left: '16px', 
-                            top: '50%', 
+                    <Search
+                        size={20}
+                        color="var(--vandy-grey)"
+                        style={{
+                            position: 'absolute',
+                            left: '16px',
+                            top: '50%',
                             transform: 'translateY(-50%)',
                             zIndex: 1
-                        }} 
+                        }}
                     />
                     <input
                         type="text"
