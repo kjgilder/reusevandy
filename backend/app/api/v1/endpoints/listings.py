@@ -160,7 +160,10 @@ async def upload_listing_image(
 
     # Validate file type
     if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
-        raise HTTPException(status_code=400, detail="Only image files are allowed (jpeg, png, webp, gif)")
+        raise HTTPException(
+            status_code=400,
+            detail="Only image files are allowed (jpeg, png, webp, gif)",
+        )
 
     file_data = await file.read()
     filename = f"listings/{id}/{file.filename}"
@@ -180,7 +183,10 @@ async def upload_listing_image(
         )
 
     if response.status_code != 200:
-        raise HTTPException(status_code=500, detail=f"Failed to upload image to Vercel Blob: {response.text}")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to upload image to Vercel Blob: {response.text}",
+        )
 
     blob_url = response.json()["url"]
 
