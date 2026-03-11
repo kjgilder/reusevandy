@@ -17,27 +17,30 @@ export default function ProductCard({ title, price, description, seller, timeAgo
 
     return (
         <div style={{
-            border: '1px solid #eee',
-            borderRadius: '8px',
+            border: '1px solid var(--vandy-light-grey)',
+            borderRadius: '12px',
             overflow: 'hidden',
-            backgroundColor: '#fff',
+            backgroundColor: 'var(--vandy-white)',
             display: 'flex',
             flexDirection: 'column',
-            transition: 'transform 0.2s, box-shadow 0.2s',
-            cursor: 'pointer'
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            cursor: 'pointer',
+            boxShadow: 'var(--shadow-sm)'
         }}
             onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-4px)';
-                e.currentTarget.style.boxShadow = '0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                e.currentTarget.style.transform = 'translateY(-6px)';
+                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                e.currentTarget.style.borderColor = 'var(--vandy-gold)';
             }}
             onMouseLeave={(e) => {
                 e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
+                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                e.currentTarget.style.borderColor = 'var(--vandy-light-grey)';
             }}
         >
             <div style={{
-                height: '200px',
-                backgroundColor: '#f5f5f5',
+                height: '210px',
+                backgroundColor: 'var(--vandy-cream)',
                 position: 'relative',
                 overflow: 'hidden'
             }}>
@@ -46,37 +49,64 @@ export default function ProductCard({ title, price, description, seller, timeAgo
                         src={imageUrl}
                         alt={title}
                         fill
-                        style={{ objectFit: 'cover' }}
+                        style={{ objectFit: 'cover', transition: 'transform 0.5s ease' }}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 ) : (
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: '#aaa' }}>
-                        No Image
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--vandy-grey)', fontWeight: '500' }}>
+                        No Image Available
                     </div>
                 )}
 
                 <span style={{
                     position: 'absolute',
-                    top: '8px',
-                    right: '8px',
-                    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-                    padding: '2px 8px',
-                    borderRadius: '4px',
-                    fontSize: '10px',
-                    fontWeight: 'bold',
-                    color: '#333',
-                    zIndex: 1
+                    top: '12px',
+                    right: '12px',
+                    backgroundColor: 'rgba(28, 28, 28, 0.8)',
+                    backdropFilter: 'blur(4px)',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: 'var(--vandy-gold)',
+                    zIndex: 1,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
                 }}>{category}</span>
             </div>
-            <div style={{ padding: '12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                    <h3 style={{ fontSize: '15px', fontWeight: 'bold', margin: '0 0 4px 0', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'var(--vandy-black)' }}>{title}</h3>
-                    <span style={{ fontSize: '15px', fontWeight: 'bold', color: 'var(--vandy-gold)' }}>${price}</span>
+                    <h3 style={{ 
+                        fontFamily: 'Outfit, sans-serif',
+                        fontSize: '16px', 
+                        fontWeight: '700', 
+                        margin: 0, 
+                        flex: 1, 
+                        color: 'var(--vandy-black)',
+                        lineHeight: '1.4'
+                    }}>{title}</h3>
                 </div>
-                <p style={{ fontSize: '13px', color: 'var(--vandy-grey)', margin: 0, lineHeight: '1.4', height: '36px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{description}</p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '11px', color: 'var(--vandy-grey)' }}>
-                    <span>{seller}</span>
-                    <span>{timeAgo}</span>
+                <p style={{ 
+                    fontSize: '13px', 
+                    color: 'var(--vandy-grey)', 
+                    margin: 0, 
+                    lineHeight: '1.5', 
+                    height: '40px', 
+                    overflow: 'hidden', 
+                    display: '-webkit-box', 
+                    WebkitLineClamp: 2, 
+                    WebkitBoxOrient: 'vertical' 
+                }}>{description}</p>
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--vandy-grey)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Seller</span>
+                        <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--vandy-black)' }}>{seller}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                        <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>
+                    </div>
                 </div>
             </div>
         </div>

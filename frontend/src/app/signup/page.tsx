@@ -38,7 +38,7 @@ export default function SignupPage() {
     return (
         <div className={styles.authContainer}>
             <div className={styles.authHeader}>
-                <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 24px' }}>
+                <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 32px' }}>
                     <Image
                         src="/assets/vu-logo-gold.png"
                         alt="Vanderbilt Logo"
@@ -48,7 +48,7 @@ export default function SignupPage() {
                     />
                 </div>
                 <h1 className={styles.authTitle}>Reuse <span>Vandy</span></h1>
-                <p className={styles.authSubtitle}>Create your account</p>
+                <p className={styles.authSubtitle}>Join the Marketplace</p>
             </div>
 
             <div className={styles.authCard}>
@@ -62,21 +62,21 @@ export default function SignupPage() {
                             id="fullName"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
-                            placeholder="name"
+                            placeholder="Cornelius Vanderbilt"
                             required
                         />
                     </div>
                     <div className={styles.inputGroup}>
-                        <label htmlFor="email">Email Address</label>
+                        <label htmlFor="email">Vanderbilt Email</label>
                         <input
                             type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="email"
+                            placeholder="username@vanderbilt.edu"
                             required
                         />
-                        <span style={{ fontSize: '11px', color: '#888' }}>Must end in @vanderbilt.edu</span>
+                        <span style={{ fontSize: '12px', color: 'var(--vandy-grey)', fontWeight: '500' }}>Must end in @vanderbilt.edu</span>
                     </div>
                     <div className={styles.inputGroup}>
                         <label htmlFor="password">Password</label>
@@ -85,15 +85,15 @@ export default function SignupPage() {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="password"
+                            placeholder="••••••••"
                             required
                         />
                     </div>
-                    <button type="submit" className={styles.button}>Sign Up</button>
+                    <button type="submit" className={styles.button}>Create Account</button>
                 </form>
 
                 <div className={styles.authFooter}>
-                    Already have an account? <Link href="/login">Login</Link>
+                    Already have an account? <Link href="/login">Login here</Link>
                 </div>
             </div>
         </div>

@@ -28,7 +28,7 @@ export default function LoginPage() {
     return (
         <div className={styles.authContainer}>
             <div className={styles.authHeader}>
-                <div style={{ position: 'relative', width: '120px', height: '120px', margin: '0 auto 24px' }}>
+                <div style={{ position: 'relative', width: '100px', height: '100px', margin: '0 auto 32px' }}>
                     <Image
                         src="/assets/vu-logo-gold.png"
                         alt="Vanderbilt Logo"
@@ -38,21 +38,21 @@ export default function LoginPage() {
                     />
                 </div>
                 <h1 className={styles.authTitle}>Reuse <span>Vandy</span></h1>
-                <p className={styles.authSubtitle}>Welcome back</p>
+                <p className={styles.authSubtitle}>The Premier Vanderbilt Marketplace</p>
             </div>
 
             <div className={styles.authCard}>
-                <h2 className={styles.authCardTitle}>Login</h2>
+                <h2 className={styles.authCardTitle}>Welcome back</h2>
                 <form onSubmit={handleSubmit} className={styles.form}>
                     {error && <p className={styles.error}>{error}</p>}
                     <div className={styles.inputGroup}>
-                        <label htmlFor="email">Email Address</label>
+                        <label htmlFor="email">Vanderbilt Email</label>
                         <input
                             type="email"
                             id="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="email"
+                            placeholder="username@vanderbilt.edu"
                             required
                         />
                     </div>
@@ -63,23 +63,23 @@ export default function LoginPage() {
                             id="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            placeholder="password"
+                            placeholder="••••••••"
                             required
                         />
                     </div>
-                    {/* Added 'Remember me' placeholder for visual match although logic is not requested */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', alignItems: 'center' }}>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--vandy-grey)', cursor: 'pointer' }}>
-                            <input type="checkbox" /> Remember me
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '14px', alignItems: 'center', marginTop: '-8px' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--vandy-grey)', cursor: 'pointer', fontWeight: '500' }}>
+                            <input type="checkbox" style={{ accentColor: 'var(--vandy-gold)' }} /> Remember me
                         </label>
-                        <a href="#" style={{ color: 'var(--vandy-gold)', textDecoration: 'none' }}>Forgot password?</a>
+                        <a href="#" style={{ color: 'var(--vandy-gold)', fontWeight: '600', textDecoration: 'none' }}>Forgot password?</a>
                     </div>
 
                     <button type="submit" className={styles.button}>Login</button>
                 </form>
 
                 <div className={styles.authFooter}>
-                    Don&apos;t have an account? <Link href="/signup">Sign Up</Link>
+                    New to Reuse Vandy? <Link href="/signup">Create an account</Link>
                 </div>
             </div>
         </div>
