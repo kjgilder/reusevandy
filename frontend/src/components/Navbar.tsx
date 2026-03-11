@@ -21,7 +21,7 @@ export default function Navbar({ onSellClick }: NavbarProps) {
             zIndex: 1000,
         }}>
             <Link href="/home" style={{ display: 'flex', alignItems: 'center', gap: '16px', opacity: 1 }}>
-                <div style={{ position: 'relative', width: '50px', height: '50px' }}>
+                <div style={{ position: 'relative', width: '100px', height: '100px' }}>
                     <Image
                         src="/assets/vu-logo-gold.png"
                         alt="Vanderbilt Logo"
@@ -31,21 +31,21 @@ export default function Navbar({ onSellClick }: NavbarProps) {
                     />
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                    <h1 style={{ 
+                    <h1 style={{
                         fontFamily: 'Outfit, sans-serif',
-                        fontSize: '22px', 
-                        fontWeight: '800', 
-                        margin: 0, 
+                        fontSize: '22px',
+                        fontWeight: '800',
+                        margin: 0,
                         color: 'var(--vandy-black)',
                         letterSpacing: '-0.01em',
                         textTransform: 'uppercase'
                     }}>
                         Reuse <span style={{ color: 'var(--vandy-gold)' }}>Vandy</span>
                     </h1>
-                    <span style={{ 
-                        fontSize: '12px', 
+                    <span style={{
+                        fontSize: '12px',
                         fontWeight: '600',
-                        color: 'var(--vandy-grey)', 
+                        color: 'var(--vandy-grey)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.05em'
                     }}>
@@ -53,7 +53,7 @@ export default function Navbar({ onSellClick }: NavbarProps) {
                     </span>
                 </div>
             </Link>
-            
+
             <button
                 onClick={onSellClick}
                 style={{
