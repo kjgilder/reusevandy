@@ -1,12 +1,20 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { X, Upload, Loader2 } from 'lucide-react';
-import { createListing, uploadListingImage } from '../utils/api';
+import { createListing, updateListing, uploadListingImage } from '../utils/api';
 
 interface ListingModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSuccess: () => void;
+    initialListing?: {
+        id: string;
+        title: string;
+        description: string;
+        price: number;
+        category: string;
+        image?: string;
+    } | null;
 }
 
 const CATEGORIES = [
@@ -18,7 +26,7 @@ const CATEGORIES = [
     "Other"
 ];
 
-export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModalProps) {
+export default function ListingModal({ isOpen, onClose, onSuccess, initialListing }: ListingModalProps) {
     const [title, setTitle] = useState('');
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState(CATEGORIES[0]);
@@ -26,6 +34,20 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (initialListing) {
+            setTitle(initialListing.title);
+            setPrice(initialListing.price.toString());
+            setCategory(initialListing.category);
+            setDescription(initialListing.description);
+        } else {
+            setTitle('');
+            setPrice('');
+            setCategory(CATEGORIES[0]);
+            setDescription('');
+        }
+    }, [initialListing, isOpen]);
 
     if (!isOpen) return null;
 
@@ -35,24 +57,26 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
         setError('');
 
         try {
-            const imageUrls: string[] = [];
-
-            // We will upload the image *after* the listing is created, 
-            // but we need to pass an empty array initially
-
             const listingData = {
                 title,
                 price: parseFloat(price),
                 description,
                 category,
-                images: imageUrls
+                images: initialListing?.image ? [initialListing.image] : []
             };
 
-            const newListing = await createListing(listingData);
+            let listingId = initialListing?.id;
 
-            // If an image was provided, upload it to the newly created listing
-            if (imageFile && newListing.id) {
-                await uploadListingImage(newListing.id, imageFile);
+            if (initialListing) {
+                 await updateListing(initialListing.id, listingData);
+            } else {
+                 const newListing = await createListing(listingData);
+                 listingId = newListing.id;
+            }
+
+            // If an image was provided, upload it 
+            if (imageFile && listingId) {
+                await uploadListingImage(listingId, imageFile);
             }
 
             onSuccess();
