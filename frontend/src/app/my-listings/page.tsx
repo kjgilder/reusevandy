@@ -6,10 +6,11 @@ import BottomNav from '../../components/BottomNav';
 import MyListingCard from '../../components/MyListingCard';
 import DeleteModal from '../../components/DeleteModal';
 import ListingModal from '../../components/ListingModal';
-import { getMyListings, updateListingStatus, deleteListing } from '../../utils/api';
+import { getMyListings, updateListingStatus, deleteListing, getPendingOffers, updateOfferStatus } from '../../utils/api';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import styles from './page.module.css';
+import { PendingOffer } from '../../components/MyListingCard';
 
 interface Listing {
     id: string;
@@ -22,6 +23,7 @@ interface Listing {
     views: number;
     messageCount: number;
     created_at: string;
+    pendingOffers?: PendingOffer[];
 }
 
 export default function MyListingsPage() {
@@ -52,13 +54,45 @@ export default function MyListingsPage() {
     const fetchListings = async () => {
         try {
             setIsLoading(true);
-            const data = await getMyListings();
-            setListings(data);
+            const [listingsData, offersData] = await Promise.all([
+                getMyListings(),
+                getPendingOffers()
+            ]);
+            
+            // Map offers to listings
+            const listingsWithOffers = listingsData.map((listing: Listing) => {
+                const listingOffers = offersData.filter((offer: PendingOffer) => offer.listing_id === listing.id);
+                return { ...listing, pendingOffers: listingOffers };
+            });
+            
+            setListings(listingsWithOffers);
         } catch (err) {
-            console.error('Failed to fetch listings:', err);
+            console.error('Failed to fetch listings or offers:', err);
             setError('Failed to load your listings. Please try again later.');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleAcceptOffer = async (offerId: string, listingId: string) => {
+        try {
+            await updateOfferStatus(offerId, 'accepted');
+            // Optimistically update the UI to move the item to 'sold' and remove it from 'available'
+            setListings(listings.map(l => l.id === listingId ? { ...l, status: 'sold', pendingOffers: l.pendingOffers?.filter(o => o.id !== offerId) } : l));
+        } catch (err) {
+            console.error('Failed to accept offer:', err);
+            alert('Failed to accept offer. Please try again.');
+        }
+    };
+
+    const handleDeclineOffer = async (offerId: string, listingId: string) => {
+        try {
+            await updateOfferStatus(offerId, 'declined');
+            // Optimistically update the UI to remove the offer from the listing
+            setListings(listings.map(l => l.id === listingId ? { ...l, pendingOffers: l.pendingOffers?.filter(o => o.id !== offerId) } : l));
+        } catch (err) {
+            console.error('Failed to decline offer:', err);
+            alert('Failed to decline offer. Please try again.');
         }
     };
 
@@ -191,9 +225,12 @@ export default function MyListingsPage() {
                                 views={listing.views}
                                 messageCount={listing.messageCount}
                                 status={listing.status}
+                                pendingOffers={listing.pendingOffers}
                                 onToggleVisibility={handleToggleVisibility}
                                 onMarkSold={handleMarkSold}
                                 onDelete={openDeleteModal}
+                                onAcceptOffer={(offerId) => handleAcceptOffer(offerId, listing.id)}
+                                onDeclineOffer={(offerId) => handleDeclineOffer(offerId, listing.id)}
                             />
                         ))}
                     </div>

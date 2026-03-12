@@ -1,6 +1,15 @@
 import Image from 'next/image';
 import { BASE_URL } from '../utils/api';
-import { Eye, EyeOff, Trash2 } from 'lucide-react';
+import { Eye, EyeOff, Trash2, CheckCircle, XCircle } from 'lucide-react';
+
+export interface PendingOffer {
+    id: string;
+    listing_id: string;
+    offer_amount: number;
+    created_at: string;
+    buyer_name: string;
+    buyer_initials: string;
+}
 
 interface MyListingCardProps {
     id: string;
@@ -13,9 +22,12 @@ interface MyListingCardProps {
     views: number;
     messageCount: number;
     status: 'available' | 'sold' | 'hidden';
+    pendingOffers?: PendingOffer[];
     onToggleVisibility: (id: string, currentStatus: string) => void;
     onMarkSold: (id: string) => void;
     onDelete: (id: string) => void;
+    onAcceptOffer?: (offerId: string) => void;
+    onDeclineOffer?: (offerId: string) => void;
 }
 
 export default function MyListingCard({
@@ -29,9 +41,12 @@ export default function MyListingCard({
     views = 0,
     messageCount = 0,
     status,
+    pendingOffers,
     onToggleVisibility,
     onMarkSold,
-    onDelete
+    onDelete,
+    onAcceptOffer,
+    onDeclineOffer
 }: MyListingCardProps) {
     const imageUrl = image ? (image.startsWith('http') ? image : `${BASE_URL}${image}`) : null;
     const isHidden = status === 'hidden';
@@ -131,6 +146,47 @@ export default function MyListingCard({
                     overflow: 'hidden',
                     textOverflow: 'ellipsis'
                 }}>{description}</p>
+
+                {/* Pending Offers Section */}
+                {pendingOffers && pendingOffers.length > 0 && status === 'available' && (
+                    <div style={{ marginTop: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', padding: '12px', border: '1px solid #bae6fd' }}>
+                        <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#0369a1', marginBottom: '8px', fontWeight: '700', letterSpacing: '0.05em' }}>
+                            Pending Offers
+                        </h4>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {pendingOffers.map(offer => {
+                                const offerDate = new Date(offer.created_at.endsWith('Z') ? offer.created_at : offer.created_at + 'Z');
+                                const timeStr = offerDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                return (
+                                    <div key={offer.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', backgroundColor: 'white', padding: '8px', borderRadius: '6px', border: '1px solid #e0f2fe' }}>
+                                        <div>
+                                            <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--vandy-black)' }}>
+                                                ${offer.offer_amount} <span style={{ fontSize: '13px', color: 'var(--vandy-grey)', fontWeight: '400' }}>from {offer.buyer_name}</span>
+                                            </div>
+                                            <div style={{ fontSize: '11px', color: 'var(--vandy-grey)' }}>{timeStr}</div>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                            <button 
+                                                onClick={() => onAcceptOffer && onAcceptOffer(offer.id)}
+                                                style={{ padding: '6px', backgroundColor: '#10b981', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}
+                                                title="Accept Offer"
+                                            >
+                                                <CheckCircle size={14} />
+                                            </button>
+                                            <button 
+                                                onClick={() => onDeclineOffer && onDeclineOffer(offer.id)}
+                                                style={{ padding: '6px', backgroundColor: 'transparent', color: '#ef4444', border: '1px solid #fca5a5', borderRadius: '4px', cursor: 'pointer', display: 'flex' }}
+                                                title="Decline Offer"
+                                            >
+                                                <XCircle size={14} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* Metrics Row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '13px', color: 'var(--vandy-grey)' }}>

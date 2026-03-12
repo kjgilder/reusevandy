@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNav from '../../components/BottomNav';
 import { Search, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { getConversations, getMessages, sendMessage, updateOfferStatus } from '../../utils/api';
+import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import styles from './page.module.css';
 
@@ -44,6 +44,7 @@ export default function MessagesPage() {
     const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
     const [messages, setMessages] = useState<Message[]>([]);
     const [messageInput, setMessageInput] = useState('');
+    const [isOfferMode, setIsOfferMode] = useState(false);
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
     
@@ -108,10 +109,20 @@ export default function MessagesPage() {
         if (!messageInput.trim() || !activeConversation) return;
 
         const tempInput = messageInput;
+        const wasOfferMode = isOfferMode;
         setMessageInput('');
+        if (wasOfferMode) setIsOfferMode(false);
 
         try {
-            await sendMessage(activeConversation.id, tempInput);
+            if (wasOfferMode) {
+                await sendOffer({
+                    listing_id: activeConversation.listing.id,
+                    offer_amount: Number(tempInput),
+                    message: `I'd like to offer $${tempInput} for the ${activeConversation.listing.title}`
+                });
+            } else {
+                await sendMessage(activeConversation.id, tempInput);
+            }
             // Re-fetch chat immediately
             const chatData = await getMessages(activeConversation.id);
             setMessages(chatData.messages);
@@ -281,12 +292,33 @@ export default function MessagesPage() {
                             </div>
 
                             <form onSubmit={handleSendMessage} className={styles.chatInputContainer}>
+                                {activeConversation.buyer.id === user.id && (
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setIsOfferMode(!isOfferMode)}
+                                        style={{
+                                            padding: '10px 14px',
+                                            borderRadius: '8px',
+                                            border: '1px solid #e5e7eb',
+                                            backgroundColor: isOfferMode ? '#ecfeff' : '#f3f4f6',
+                                            color: isOfferMode ? '#06b6d4' : '#6b7280',
+                                            fontWeight: '800',
+                                            fontSize: '16px',
+                                            cursor: 'pointer',
+                                            transition: 'all 0.2s'
+                                        }}
+                                        title="Make an Offer"
+                                    >
+                                        $
+                                    </button>
+                                )}
                                 <input
-                                    type="text"
+                                    type={isOfferMode ? "number" : "text"}
                                     value={messageInput}
                                     onChange={(e) => setMessageInput(e.target.value)}
-                                    placeholder="Type a message..."
+                                    placeholder={isOfferMode ? "Enter offer amount..." : "Type a message..."}
                                     className={styles.chatInput}
+                                    min={isOfferMode ? "0" : undefined}
                                 />
                                 <button type="submit" className={styles.sendButton} disabled={!messageInput.trim()}>
                                     <Send size={18} />
