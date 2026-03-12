@@ -40,3 +40,15 @@ class OfferCreate(BaseModel):
 
 class OfferStatusUpdate(BaseModel):
     status: str # 'accepted' or 'declined'
+
+class InitiateConversation(BaseModel):
+    listing_id: str
+    content: str
+
+class PendingOfferOut(BaseModel):
+    id: UUID
+    listing_id: UUID
+    offer_amount: float
+    created_at: datetime
+    buyer_name: str
+    buyer_initials: str

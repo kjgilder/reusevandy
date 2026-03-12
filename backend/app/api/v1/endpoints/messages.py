@@ -13,7 +13,9 @@ from app.schemas.message import (
     MessageOut,
     MessageCreate,
     OfferCreate,
-    OfferStatusUpdate
+    OfferStatusUpdate,
+    InitiateConversation,
+    PendingOfferOut
 )
 from beanie.operators import Or, And
 
@@ -35,6 +37,44 @@ async def get_conversations(current_user: User = Depends(deps.get_current_user))
         await conv.fetch_all_links()
         
     return conversations
+
+@router.get("/offers/pending", response_model=List[PendingOfferOut])
+async def get_pending_offers(current_user: User = Depends(deps.get_current_user)):
+    """Get all pending offers for the current user's listings."""
+    # Find conversations where the user is the seller
+    conversations = await Conversation.find(Conversation.seller.id == current_user.id).to_list()
+    if not conversations:
+        return []
+        
+    conv_ids = [c.id for c in conversations]
+    
+    # Find all messages in those conversations that are pending offers
+    from beanie.operators import In
+    messages = await Message.find(
+        Message.is_offer == True,
+        Message.offer_status == "pending",
+        In(Message.conversation.id, conv_ids)
+    ).sort("-created_at").to_list()
+    
+    results = []
+    for msg in messages:
+        await msg.fetch_all_links()
+        await msg.conversation.fetch_all_links()
+        
+        buyer = msg.conversation.buyer
+        buyer_name = buyer.full_name or buyer.email or "Unknown"
+        buyer_initials = buyer_name[:2].upper()
+        
+        results.append(PendingOfferOut(
+            id=msg.id,
+            listing_id=msg.conversation.listing.id,
+            offer_amount=msg.offer_amount,
+            created_at=msg.created_at,
+            buyer_name=buyer_name,
+            buyer_initials=buyer_initials
+        ))
+        
+    return results
 
 @router.get("/{conversation_id}", response_model=ConversationDetailOut)
 async def get_conversation_details(
@@ -115,6 +155,57 @@ async def create_offer(
     await message.fetch_all_links()
     
     # Increment message count on listing
+    listing.message_count += 1
+    await listing.save()
+    
+    return message
+
+@router.post("/initiate", response_model=MessageOut)
+async def initiate_conversation(
+    init_in: InitiateConversation,
+    current_user: User = Depends(deps.get_current_user)
+):
+    """Start a conversation on a listing without an offer."""
+    listing = await Listing.get(init_in.listing_id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+        
+    await listing.fetch_link(Listing.seller)
+    
+    if str(listing.seller.id) == str(current_user.id):
+        raise HTTPException(status_code=400, detail="You cannot message yourself")
+        
+    conversation = await Conversation.find_one(
+        And(
+            Conversation.listing.id == listing.id,
+            Conversation.buyer.id == current_user.id
+        )
+    )
+    
+    now = datetime.now(timezone.utc)
+    
+    if not conversation:
+        conversation = Conversation(
+            listing=listing,
+            buyer=current_user,
+            seller=listing.seller,
+            last_message_at=now
+        )
+        await conversation.insert()
+    else:
+        conversation.last_message_at = now
+        await conversation.save()
+        
+    message = Message(
+        conversation=conversation,
+        sender=current_user,
+        content=init_in.content,
+        is_offer=False,
+        created_at=now
+    )
+    await message.insert()
+    await message.fetch_all_links()
+    
     listing.message_count += 1
     await listing.save()
     

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { X, Edit, Trash2 } from 'lucide-react';
-import { BASE_URL, sendOffer, deleteListing } from '../utils/api';
+import { BASE_URL, sendOffer, deleteListing, initiateConversation } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import styles from '../app/my-listings/page.module.css'; // Reuse some modal styles
 import DeleteModal from './DeleteModal';
@@ -270,13 +270,9 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                         try {
                                              setIsSending(true);
                                              setError('');
-                                             // Hacky way to just create a conversation without an offer: Send a 0 offer and instantly invalidate it, 
-                                             // or ideally we'd have a backend route just to start a convo. But "sendOffer" with a text msg works to kick it off.
-                                             // The user just wanted to message the seller about the item.
-                                             await sendOffer({
+                                             await initiateConversation({
                                                  listing_id: listing.id,
-                                                 offer_amount: listing.price, // Technically sends an offer, but this satisfies the backend logic
-                                                 message: `Hi, I'm interested in the ${listing.title}.` 
+                                                 content: `Hi, I'm interested in the ${listing.title}.` 
                                              });
                                              setSuccess('Message sent successfully!');
                                              setTimeout(() => {
