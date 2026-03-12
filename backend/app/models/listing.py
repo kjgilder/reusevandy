@@ -21,6 +21,7 @@ class ListingStatus(str, Enum):
     AVAILABLE = "available"
     PENDING = "pending"
     SOLD = "sold"
+    HIDDEN = "hidden"
 
 
 class Listing(Document):
@@ -32,6 +33,8 @@ class Listing(Document):
     images: List[str] = []  # List of Vercel Blob URLs
     seller: Link[User]
     status: ListingStatus = ListingStatus.AVAILABLE
+    views: int = 0
+    message_count: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

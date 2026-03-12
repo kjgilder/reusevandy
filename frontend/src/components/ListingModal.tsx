@@ -184,7 +184,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess }: ListingModa
 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Price ($)</label>
+                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Offer Price ($)</label>
                             <input
                                 type="number"
                                 required

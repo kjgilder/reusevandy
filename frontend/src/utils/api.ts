@@ -52,3 +52,20 @@ export async function uploadListingImage(listingId: string, file: File) {
     body: formData,
   });
 }
+
+export async function getMyListings() {
+  return apiRequest('/listings/me');
+}
+
+export async function updateListingStatus(listingId: string, status: string) {
+  return apiRequest(`/listings/${listingId}`, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteListing(listingId: string) {
+  return apiRequest(`/listings/${listingId}`, {
+    method: 'DELETE',
+  });
+}

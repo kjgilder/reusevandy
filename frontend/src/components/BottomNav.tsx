@@ -24,7 +24,7 @@ export default function BottomNav() {
                 <MessageSquare size={24} />
                 <span style={{ fontSize: '10px' }}>Messages</span>
             </Link>
-            <Link href="/profile" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--vandy-grey)' }}>
+            <Link href="/my-listings" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', textDecoration: 'none', color: 'var(--vandy-grey)' }}>
                 <User size={24} />
                 <span style={{ fontSize: '10px' }}>My Listings</span>
             </Link>
