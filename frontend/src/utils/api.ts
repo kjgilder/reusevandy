@@ -64,8 +64,50 @@ export async function updateListingStatus(listingId: string, status: string) {
   });
 }
 
+export async function updateListing(listingId: string, data: Record<string, unknown>) {
+  return apiRequest(`/listings/${listingId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
+
 export async function deleteListing(listingId: string) {
   return apiRequest(`/listings/${listingId}`, {
     method: 'DELETE',
+  });
+}
+export async function getConversations() {
+  return apiRequest('/messages/');
+}
+
+export async function getMessages(conversationId: string) {
+  return apiRequest(`/messages/${conversationId}`);
+}
+
+export async function sendOffer(data: { listing_id: string; offer_amount: number; message?: string }) {
+  return apiRequest('/messages/offer', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function sendMessage(conversationId: string, content: string) {
+  return apiRequest(`/messages/${conversationId}/text`, {
+    method: 'POST',
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function updateOfferStatus(messageId: string, status: 'accepted' | 'declined') {
+  return apiRequest(`/messages/message/${messageId}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function updateOfferAmount(messageId: string, offer_amount: number) {
+  return apiRequest(`/messages/message/${messageId}/offer`, {
+    method: 'PUT',
+    body: JSON.stringify({ listing_id: 'placeholder', offer_amount }), // listing_id ignored in backend for this route
   });
 }

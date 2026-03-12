@@ -1,0 +1,309 @@
+.pageContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--vandy-cream);
+}
+
+.messagesMain {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    padding-bottom: 70px; /* Space for BottomNav */
+}
+
+.sidebar {
+    width: 320px;
+    background-color: white;
+    border-right: 1px solid #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.sidebarHeader {
+    padding: 20px 24px 16px;
+    background-color: var(--vandy-cream);
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.sidebarHeader h1 {
+    margin: 0 0 16px 0;
+    font-size: 24px;
+    font-family: 'Outfit', sans-serif;
+    color: var(--vandy-black);
+}
+
+.searchContainer {
+    position: relative;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 10px 10px 10px 36px;
+    border-radius: 8px;
+    border: none;
+    background-color: #f3f4f6;
+    font-size: 14px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+.conversationList {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.conversationItem {
+    padding: 16px 24px;
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid #f3f4f6;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.conversationItem:hover {
+    background-color: #f9fafb;
+}
+
+.conversationItem.active {
+    background-color: #fffbeb; /* Light yellow for active state */
+    border-left: 4px solid var(--vandy-gold);
+    padding-left: 20px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--vandy-gold);
+    color: var(--vandy-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.conversationDetails {
+    flex: 1;
+    min-width: 0; /* Enable truncation */
+}
+
+.conversationHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 2px;
+}
+
+.participantName {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--vandy-black);
+    margin: 0;
+}
+
+.listingInfo {
+    font-size: 12px;
+    color: var(--vandy-gold); /* Using gold like the design */
+    font-weight: 600;
+    margin: 0 0 4px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.lastMessage {
+    font-size: 13px;
+    color: var(--vandy-black);
+    font-weight: 600; /* Bold for unread effect in design */
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.chatArea {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: white;
+}
+
+.chatHeader {
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.messageList {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.chatInputContainer {
+    padding: 20px 24px;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.chatInput {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: none;
+    background-color: #f3f4f6;
+    font-size: 14px;
+    outline: none;
+}
+
+.sendButton {
+    background-color: var(--vandy-gold);
+    color: var(--vandy-black);
+    border: none;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.sendButton:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Individual Message Styles */
+.messageWrapper {
+    display: flex;
+    flex-direction: column;
+    max-width: 80%;
+}
+
+.messageWrapper.sent {
+    align-self: flex-end;
+}
+
+.messageWrapper.received {
+    align-self: flex-start;
+}
+
+.messageBubble {
+    padding: 12px 16px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.messageBubble.sent {
+    background-color: #f3f4f6;
+    color: var(--vandy-black);
+    border-top-right-radius: 4px;
+}
+
+.messageBubble.received {
+    background-color: #f3f4f6;
+    color: var(--vandy-black);
+    border-top-left-radius: 4px;
+}
+
+.messageTime {
+    font-size: 11px;
+    color: var(--vandy-grey);
+    margin-top: 4px;
+}
+
+.messageWrapper.sent .messageTime {
+    text-align: right;
+}
+
+/* Offer Bubble Specifics */
+.offerBubble {
+    background-color: #ecfeff; /* Light cyan from design */
+    border: 1px solid #06b6d4; /* Cyan border */
+    border-radius: 12px;
+    padding: 16px;
+    min-width: 250px;
+}
+
+.offerBadge {
+    background-color: #d97706; /* Orangeish for badge */
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    display: inline-block;
+    margin-bottom: 12px;
+}
+
+.offerAmount {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--vandy-black);
+    margin: 0 0 4px 0;
+}
+
+.offerText {
+    font-size: 13px;
+    color: var(--vandy-grey);
+    margin: 0 0 16px 0;
+}
+
+.offerActions {
+    display: flex;
+    gap: 8px;
+}
+
+.offerActionBtn {
+    flex: 1;
+    padding: 8px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    border: 1px solid #e5e7eb;
+    background-color: white;
+}
+
+.btnAccept {
+    color: #10b981; /* Green */
+    border-color: #10b981;
+}
+
+.btnDecline {
+    color: var(--vandy-grey);
+}
+
+.acceptedBadge {
+     background-color: #10b981;
+     color: white;
+     font-size: 10px;
+     font-weight: 700;
+     padding: 2px 8px;
+     border-radius: 12px;
+     text-transform: uppercase;
+     display: inline-block;
+     margin-bottom: 12px;
+     margin-left: 8px;
+}

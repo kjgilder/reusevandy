@@ -1,41 +1,51 @@
+import Image from 'next/image';
 import { BASE_URL } from '../utils/api';
 
-import Image from 'next/image';
-
-interface ProductProps {
+interface ProductCardProps {
+    id: string;
     title: string;
-    price: number;
     description: string;
+    price: number;
+    image?: string;
     seller: string;
+    sellerId?: string;
+    sellerEmail?: string;
     timeAgo: string;
-    image?: string; // Optional image URL
     category: string;
+    onClick?: () => void;
 }
 
-export default function ProductCard({ title, price, description, seller, timeAgo, image, category }: ProductProps) {
+export default function ProductCard({ id, title, description, price, image, seller, sellerId, sellerEmail, timeAgo, category, onClick }: ProductCardProps) {
     const imageUrl = image ? (image.startsWith('http') ? image : `${BASE_URL}${image}`) : null;
 
     return (
-        <div style={{
-            border: '1px solid var(--vandy-light-grey)',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            backgroundColor: 'var(--vandy-white)',
-            display: 'flex',
-            flexDirection: 'column',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            cursor: 'pointer',
-            boxShadow: 'var(--shadow-sm)'
-        }}
+        <div
+            onClick={onClick}
+            style={{
+                border: '1px solid var(--vandy-light-grey)',
+                borderRadius: '12px',
+                overflow: 'hidden',
+                backgroundColor: 'var(--vandy-white)',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                cursor: onClick ? 'pointer' : 'default',
+                boxShadow: 'var(--shadow-sm)'
+            }}
+            className="product-card"
             onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-6px)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
-                e.currentTarget.style.borderColor = 'var(--vandy-gold)';
+                if (onClick) {
+                    e.currentTarget.style.transform = 'translateY(-6px)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-lg)';
+                    e.currentTarget.style.borderColor = 'var(--vandy-gold)';
+                }
             }}
             onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
-                e.currentTarget.style.borderColor = 'var(--vandy-light-grey)';
+                if (onClick) {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = 'var(--shadow-sm)';
+                    e.currentTarget.style.borderColor = 'var(--vandy-light-grey)';
+                }
             }}
         >
             <div style={{
