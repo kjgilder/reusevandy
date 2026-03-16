@@ -31,6 +31,8 @@ class ListingOut(ListingBase):
     id: UUID
     seller: UserOut
     status: ListingStatus
+    views: int
+    message_count: int
     created_at: datetime
     updated_at: datetime
 

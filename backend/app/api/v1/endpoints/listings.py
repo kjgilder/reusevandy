@@ -85,6 +85,27 @@ async def read_listings(
     return listings
 
 
+@router.get("/me", response_model=List[ListingOut])
+async def read_my_listings(
+    current_user: User = Depends(deps.get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve listings for the current user.
+    """
+    query = Listing.find(Listing.seller.id == current_user.id)
+    query = query.sort("-created_at")
+
+    listings = await query.skip(skip).limit(limit).to_list()
+
+    # We need to fetch related seller data for response model
+    for listing in listings:
+        await listing.fetch_link(Listing.seller)
+
+    return listings
+
+
 @router.get("/{id}", response_model=ListingOut)
 async def read_listing(id: UUID) -> Any:
     """
