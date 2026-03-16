@@ -35,6 +35,8 @@ async def get_conversations(current_user: User = Depends(deps.get_current_user))
     # We need to explicitly fetch links in Beanie
     for conv in conversations:
         await conv.fetch_all_links()
+        if getattr(conv, "listing", None):
+            await conv.listing.fetch_link(Listing.seller)
         
     return conversations
 
@@ -87,6 +89,8 @@ async def get_conversation_details(
         raise HTTPException(status_code=404, detail="Conversation not found")
         
     await conversation.fetch_all_links()
+    if getattr(conversation, "listing", None):
+        await conversation.listing.fetch_link(Listing.seller)
     
     if str(current_user.id) not in [str(conversation.buyer.id), str(conversation.seller.id)]:
         raise HTTPException(status_code=403, detail="Not authorized to view this conversation")
@@ -160,7 +164,7 @@ async def create_offer(
     
     return message
 
-@router.post("/initiate", response_model=MessageOut)
+@router.post("/initiate", response_model=ConversationOut)
 async def initiate_conversation(
     init_in: InitiateConversation,
     current_user: User = Depends(deps.get_current_user)
@@ -192,24 +196,25 @@ async def initiate_conversation(
             last_message_at=now
         )
         await conversation.insert()
-    else:
+        
+    if getattr(init_in, "content", None):
         conversation.last_message_at = now
         await conversation.save()
+        message = Message(
+            conversation=conversation,
+            sender=current_user,
+            content=init_in.content,
+            is_offer=False,
+            created_at=now
+        )
+        await message.insert()
+        await message.fetch_all_links()
         
-    message = Message(
-        conversation=conversation,
-        sender=current_user,
-        content=init_in.content,
-        is_offer=False,
-        created_at=now
-    )
-    await message.insert()
-    await message.fetch_all_links()
+        listing.message_count += 1
+        await listing.save()
     
-    listing.message_count += 1
-    await listing.save()
-    
-    return message
+    await conversation.fetch_all_links()
+    return conversation
 
 @router.post("/{conversation_id}/text", response_model=MessageOut)
 async def send_message(

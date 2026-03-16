@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { X, Edit, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { BASE_URL, sendOffer, deleteListing, initiateConversation } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import styles from '../app/my-listings/page.module.css'; // Reuse some modal styles
@@ -29,8 +30,8 @@ interface ProductDetailModalProps {
 
 export default function ProductDetailModal({ isOpen, onClose, listing, onListingDeleted }: ProductDetailModalProps) {
     const { user } = useAuth();
+    const router = useRouter();
     const [offerAmount, setOfferAmount] = useState<string>('');
-    const [messageText, setMessageText] = useState<string>('');
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -64,7 +65,6 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                 onClose();
                 setSuccess('');
                 setOfferAmount('');
-                setMessageText('');
             }, 2000);
         } catch (err: any) {
             setError(err.message || 'Failed to send offer');
@@ -212,107 +212,87 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                             </div>
                         ) : (
                             <div>
-                                <h3 style={{ fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>Make an Offer or Message Seller</h3>
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                                    <div style={{ position: 'relative', flex: 1 }}>
-                                        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold' }}>$</span>
-                                        <input
-                                            type="number"
-                                            value={offerAmount}
-                                            onChange={(e) => setOfferAmount(e.target.value)}
-                                            placeholder={listing.price.toString()}
-                                            style={{
-                                                width: '100%',
-                                                padding: '12px 12px 12px 28px',
-                                                borderRadius: '8px',
-                                                border: '1px solid #e5e7eb',
-                                                fontSize: '16px',
-                                                fontWeight: '600',
-                                                outline: 'none',
-                                                boxSizing: 'border-box'
+                                <div>
+                                    <h3 style={{ fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>Make an Offer</h3>
+                                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                                        <div style={{ position: 'relative', flex: 1 }}>
+                                            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold' }}>$</span>
+                                            <input
+                                                type="number"
+                                                value={offerAmount}
+                                                onChange={(e) => setOfferAmount(e.target.value)}
+                                                placeholder={listing.price.toString()}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '12px 12px 12px 28px',
+                                                    borderRadius: '8px',
+                                                    border: '1px solid #e5e7eb',
+                                                    fontSize: '16px',
+                                                    fontWeight: '600',
+                                                    outline: 'none',
+                                                    boxSizing: 'border-box'
+                                                }}
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                const amountToSend = offerAmount ? offerAmount : listing.price.toString();
+                                                setOfferAmount(amountToSend);
+                                                setTimeout(() => {
+                                                    const btn = document.getElementById('hidden-offer-btn');
+                                                    if (btn) btn.click();
+                                                }, 10);
                                             }}
+                                            disabled={isSending}
+                                            style={{
+                                                padding: '12px 24px',
+                                                backgroundColor: 'var(--vandy-gold)',
+                                                color: 'var(--vandy-black)',
+                                                border: 'none',
+                                                borderRadius: '8px',
+                                                fontWeight: '700',
+                                                fontSize: '15px',
+                                                cursor: isSending ? 'not-allowed' : 'pointer',
+                                                opacity: isSending ? 0.5 : 1,
+                                                minWidth: '130px'
+                                            }}
+                                        >
+                                            {isSending ? 'Sending...' : 'Send Offer'}
+                                        </button>
+                                        
+                                        {/* Hidden button to perform the actual submit with the updated state */}
+                                        <button
+                                            id="hidden-offer-btn"
+                                            style={{ display: 'none' }}
+                                            onClick={handleSendOffer}
                                         />
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            const amountToSend = offerAmount ? offerAmount : listing.price.toString();
-                                            // Instead of failing, just set the state and then call the real handler immediately
-                                            setOfferAmount(amountToSend);
-                                            setTimeout(() => {
-                                                const btn = document.getElementById('hidden-offer-btn');
-                                                if (btn) btn.click();
-                                            }, 10);
-                                        }}
-                                        disabled={isSending}
-                                        style={{
-                                            padding: '12px 24px',
-                                            backgroundColor: 'var(--vandy-gold)',
-                                            color: 'var(--vandy-black)',
-                                            border: 'none',
-                                            borderRadius: '8px',
-                                            fontWeight: '700',
-                                            fontSize: '15px',
-                                            cursor: isSending ? 'not-allowed' : 'pointer',
-                                            opacity: isSending ? 0.5 : 1
-                                        }}
-                                    >
-                                        {isSending ? 'Sending...' : 'Send Offer'}
-                                    </button>
-
-                                    {/* Hidden button to perform the actual submit with the updated state */}
-                                    <button
-                                        id="hidden-offer-btn"
-                                        style={{ display: 'none' }}
-                                        onClick={handleSendOffer}
-                                    />
+                                    <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: 'var(--vandy-grey)' }}>
+                                        Tip: You can negotiate below the asking price
+                                    </p>
                                 </div>
 
-                                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '12px' }}>
-                                    <div style={{ flex: 1 }}>
-                                        <input
-                                            type="text"
-                                            value={messageText}
-                                            onChange={(e) => setMessageText(e.target.value)}
-                                            placeholder="Write a message to the seller..."
-                                            style={{
-                                                width: '100%',
-                                                padding: '12px',
-                                                borderRadius: '8px',
-                                                border: '1px solid #e5e7eb',
-                                                fontSize: '15px',
-                                                outline: 'none',
-                                                boxSizing: 'border-box'
-                                            }}
-                                        />
-                                    </div>
+                                <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '20px', paddingTop: '20px' }}>
                                     <button
                                         onClick={async () => {
-                                            if (!messageText.trim()) {
-                                                setError('Please write a message first');
-                                                return;
-                                            }
                                             try {
                                                 setIsSending(true);
                                                 setError('');
-                                                await initiateConversation({
-                                                    listing_id: listing.id,
-                                                    content: messageText
+                                                const conv = await initiateConversation({
+                                                    listing_id: listing.id
                                                 });
-                                                setSuccess('Message sent successfully!');
-                                                setTimeout(() => {
-                                                    onClose();
-                                                    setSuccess('');
-                                                    setMessageText('');
-                                                }, 2000);
+                                                onClose();
+                                                router.push(`/messages?conversationId=${conv.id}`);
                                             } catch (err: any) {
-                                                setError(err.message || 'Failed to send message');
+                                                setError(err.message || 'Failed to start conversation');
                                             } finally {
                                                 setIsSending(false);
                                             }
                                         }}
                                         disabled={isSending}
                                         style={{
-                                            padding: '12px 24px',
+                                            width: '100%',
+                                            padding: '12px',
                                             backgroundColor: 'white',
                                             color: 'var(--vandy-black)',
                                             border: '1px solid #e5e7eb',
@@ -324,7 +304,7 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                             boxSizing: 'border-box'
                                         }}
                                     >
-                                        Message Seller
+                                        Direct Message
                                     </button>
                                 </div>
 
