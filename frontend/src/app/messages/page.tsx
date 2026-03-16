@@ -37,7 +37,7 @@ interface Message {
 }
 
 export default function MessagesPage() {
-    const { user } = useAuth();
+    const { user, loading } = useAuth();
     const router = useRouter();
     
     const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -51,6 +51,7 @@ export default function MessagesPage() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        if (loading) return; // Wait for the auth check to finish
         if (!user) {
             router.push('/login');
             return;
@@ -61,7 +62,14 @@ export default function MessagesPage() {
                 const data = await getConversations();
                 setConversations(data);
                 if (data.length > 0 && !activeConversation) {
-                    setActiveConversation(data[0]);
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const targetConvId = urlParams.get('conversationId');
+                    if (targetConvId) {
+                        const target = data.find((c: any) => c.id === targetConvId);
+                        setActiveConversation(target || data[0]);
+                    } else {
+                        setActiveConversation(data[0]);
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch conversations", err);

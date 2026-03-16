@@ -91,7 +91,7 @@ export async function sendOffer(data: { listing_id: string; offer_amount: number
   });
 }
 
-export async function initiateConversation(data: { listing_id: string; content: string }) {
+export async function initiateConversation(data: { listing_id: string; content?: string }) {
   return apiRequest('/messages/initiate', {
     method: 'POST',
     body: JSON.stringify(data),

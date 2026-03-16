@@ -43,7 +43,7 @@ class OfferStatusUpdate(BaseModel):
 
 class InitiateConversation(BaseModel):
     listing_id: str
-    content: str
+    content: Optional[str] = None
 
 class PendingOfferOut(BaseModel):
     id: UUID
