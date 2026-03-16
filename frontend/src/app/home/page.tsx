@@ -7,6 +7,7 @@ import BottomNav from '../../components/BottomNav';
 import FilterBar from '../../components/FilterBar';
 import ProductCard from '../../components/ProductCard';
 import ListingModal from '../../components/ListingModal';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import { Search, Loader2 } from 'lucide-react';
 import { getListings } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -20,16 +21,19 @@ interface Listing {
     category: string;
     images?: string[];
     seller?: {
+        id?: string;
         full_name?: string;
         email?: string;
     };
+    timeAgo?: string;
     created_at: string;
 }
 
 export default function HomePage() {
     const [listings, setListings] = useState<Listing[]>([]);
     const [loading, setLoading] = useState(true);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isListingModalOpen, setIsListingModalOpen] = useState(false);
+    const [detailModalItem, setDetailModalItem] = useState<Listing | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const { user } = useAuth();
@@ -83,13 +87,24 @@ export default function HomePage() {
                     router.push('/login');
                     return;
                 }
-                setIsModalOpen(true);
+                setIsListingModalOpen(true);
             }} />
 
             <ListingModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
+                isOpen={isListingModalOpen}
+                onClose={() => setIsListingModalOpen(false)}
                 onSuccess={fetchListings}
+            />
+
+            <ProductDetailModal
+                isOpen={!!detailModalItem}
+                onClose={() => setDetailModalItem(null)}
+                listing={detailModalItem ? {
+                    ...detailModalItem,
+                    image: detailModalItem.images && detailModalItem.images.length > 0 ? detailModalItem.images[0] : undefined,
+                    timeAgo: getTimeAgo(detailModalItem.created_at)
+                } : null}
+                onListingDeleted={fetchListings}
             />
 
             <main className={styles.homeMain}>
@@ -142,13 +157,23 @@ export default function HomePage() {
                         {listings.map(listing => (
                             <ProductCard
                                 key={listing.id}
+                                id={listing.id}
                                 title={listing.title}
                                 price={listing.price}
                                 description={listing.description}
                                 seller={listing.seller?.full_name || listing.seller?.email || 'Unknown Seller'}
+                                sellerId={listing.seller?.id}
+                                sellerEmail={listing.seller?.email}
                                 timeAgo={getTimeAgo(listing.created_at)}
                                 category={listing.category}
                                 image={listing.images && listing.images.length > 0 ? listing.images[0] : undefined}
+                                onClick={() => {
+                                    if (!user) {
+                                        router.push('/login');
+                                    } else {
+                                        setDetailModalItem(listing);
+                                    }
+                                }}
                             />
                         ))}
                         {listings.length === 0 && (
