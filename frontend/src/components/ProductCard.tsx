@@ -6,6 +6,7 @@ interface ProductCardProps {
     title: string;
     description: string;
     price: number;
+    images?: string[];
     image?: string;
     seller: string;
     sellerId?: string;
@@ -15,8 +16,9 @@ interface ProductCardProps {
     onClick?: () => void;
 }
 
-export default function ProductCard({ id, title, description, price, image, seller, sellerId, sellerEmail, timeAgo, category, onClick }: ProductCardProps) {
-    const imageUrl = image ? (image.startsWith('http') ? image : `${BASE_URL}${image}`) : null;
+export default function ProductCard({ id, title, description, price, images, image, seller, sellerId, sellerEmail, timeAgo, category, onClick }: ProductCardProps) {
+    const displayImage = (images && images.length > 0) ? images[0] : image;
+    const imageUrl = displayImage ? (displayImage.startsWith('http') ? displayImage : `${BASE_URL}${displayImage}`) : null;
 
     return (
         <div

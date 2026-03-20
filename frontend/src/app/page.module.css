@@ -177,3 +177,64 @@
   border-color: var(--vandy-gold);
   box-shadow: var(--shadow-md);
 }
+
+.main {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.intro h1 {
+  font-size: 64px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--vandy-black);
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.intro p {
+  font-size: 20px;
+  color: var(--vandy-grey);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.ctas {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.primary, .secondary {
+  padding: 16px 40px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 18px;
+  text-decoration: none;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.primary {
+  background-color: var(--vandy-black);
+  color: var(--vandy-gold);
+}
+
+.primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.secondary {
+  background-color: var(--vandy-white);
+  color: var(--vandy-black);
+  border: 2px solid var(--vandy-sand);
+}
+
+.secondary:hover {
+  background-color: var(--vandy-cream);
+  transform: translateY(-2px);
+}

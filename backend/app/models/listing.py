@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from beanie import Document, Link
 from pydantic import Field
@@ -32,6 +32,7 @@ class Listing(Document):
     category: Category
     images: List[str] = []  # List of Vercel Blob URLs
     seller: Link[User]
+    buyer: Optional[Link[User]] = None
     status: ListingStatus = ListingStatus.AVAILABLE
     views: int = 0
     message_count: int = 0

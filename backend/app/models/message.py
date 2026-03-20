@@ -22,6 +22,7 @@ class Message(Document):
     conversation: Link[Conversation]
     sender: Link[User]
     content: Optional[str] = None
+    is_read: bool = False
     
     # Offer specific fields
     is_offer: bool = False
