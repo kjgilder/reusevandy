@@ -7,6 +7,7 @@ from app.api import deps
 from app.models.user import User
 from app.models.listing import Listing
 from app.models.message import Conversation, Message
+from app.core import email
 from app.schemas.message import (
     ConversationOut, 
     ConversationDetailOut,
@@ -33,12 +34,56 @@ async def get_conversations(current_user: User = Depends(deps.get_current_user))
     ).sort("-last_message_at").to_list()
     
     # We need to explicitly fetch links in Beanie
+    results = []
     for conv in conversations:
         await conv.fetch_all_links()
         if getattr(conv, "listing", None):
             await conv.listing.fetch_link(Listing.seller)
         
-    return conversations
+        # Calculate unread count for the current user
+        # Unread messages are those NOT sent by the current user and where is_read is False
+        unread_count = await Message.find(
+            Message.conversation.id == conv.id,
+            Message.sender.id != current_user.id,
+            Message.is_read == False
+        ).count()
+        
+        # Convert to schema manually since we added a calculated field
+        results.append(ConversationOut(
+            id=conv.id,
+            listing=conv.listing,
+            buyer=conv.buyer,
+            seller=conv.seller,
+            last_message_at=conv.last_message_at,
+            unread_count=unread_count
+        ))
+        
+    return results
+
+@router.get("/unread/total")
+async def get_unread_total(current_user: User = Depends(deps.get_current_user)):
+    """Get total number of unread messages across all conversations."""
+    # Find all conversations for the user
+    conversations = await Conversation.find(
+        Or(
+            Conversation.buyer.id == current_user.id,
+            Conversation.seller.id == current_user.id
+        )
+    ).to_list()
+    
+    if not conversations:
+        return {"total": 0}
+        
+    conv_ids = [c.id for c in conversations]
+    
+    from beanie.operators import In
+    total_unread = await Message.find(
+        In(Message.conversation.id, conv_ids),
+        Message.sender.id != current_user.id,
+        Message.is_read == False
+    ).count()
+    
+    return {"total": total_unread}
 
 @router.get("/offers/pending", response_model=List[PendingOfferOut])
 async def get_pending_offers(current_user: User = Depends(deps.get_current_user)):
@@ -95,6 +140,13 @@ async def get_conversation_details(
     if str(current_user.id) not in [str(conversation.buyer.id), str(conversation.seller.id)]:
         raise HTTPException(status_code=403, detail="Not authorized to view this conversation")
         
+    # Mark messages as read when they are fetched by the recipient
+    await Message.find(
+        Message.conversation.id == conversation.id,
+        Message.sender.id != current_user.id,
+        Message.is_read == False
+    ).set({"is_read": True})
+
     messages = await Message.find(Message.conversation.id == conversation.id).sort("created_at").to_list()
     for msg in messages:
         await msg.fetch_all_links()
@@ -105,6 +157,7 @@ async def get_conversation_details(
         "buyer": conversation.buyer,
         "seller": conversation.seller,
         "last_message_at": conversation.last_message_at,
+        "unread_count": 0, # Since we just marked them all as read
         "messages": messages
     }
 
@@ -161,6 +214,16 @@ async def create_offer(
     # Increment message count on listing
     listing.message_count += 1
     await listing.save()
+    
+    # Notify seller via email
+    seller_email = listing.seller.email
+    buyer_name = current_user.full_name or current_user.email
+    await email.send_new_offer_notification(
+        seller_email=seller_email,
+        buyer_name=buyer_name,
+        listing_title=listing.title,
+        offer_amount=offer_in.offer_amount
+    )
     
     return message
 
@@ -252,6 +315,15 @@ async def send_message(
     listing.message_count += 1
     await listing.save()
     
+    # Notify recipient via email
+    recipient = conversation.seller if str(current_user.id) == str(conversation.buyer.id) else conversation.buyer
+    sender_name = current_user.full_name or current_user.email
+    await email.send_new_message_notification(
+        recipient_email=recipient.email,
+        sender_name=sender_name,
+        listing_title=listing.title
+    )
+    
     return message
 
 @router.put("/message/{message_id}/status", response_model=MessageOut)
@@ -278,12 +350,13 @@ async def update_offer_status(
     message.offer_status = status_update.status
     await message.save()
     
-    # If accepted, mark the listing as sold
+    # If accepted, mark the listing as sold and set the buyer
     if status_update.status == "accepted":
         conv = message.conversation
         await conv.listing.fetch_link(Listing.seller)
         listing = conv.listing
         listing.status = "sold" # Use the string exact value from ListingStatus enum
+        listing.buyer = conv.buyer # Set the buyer from the conversation
         await listing.save()
     
     return message

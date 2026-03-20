@@ -19,13 +19,13 @@ interface MyListingCardProps {
     timeAgo: string;
     image?: string;
     category: string;
-    views: number;
-    messageCount: number;
-    status: 'available' | 'sold' | 'hidden';
+    views?: number;
+    messageCount?: number;
+    status: 'available' | 'sold' | 'hidden' | 'pending';
     pendingOffers?: PendingOffer[];
-    onToggleVisibility: (id: string, currentStatus: string) => void;
-    onMarkSold: (id: string) => void;
-    onDelete: (id: string) => void;
+    onToggleVisibility?: (id: string, currentStatus: string) => void;
+    onMarkSold?: (id: string) => void;
+    onDelete?: (id: string) => void;
     onAcceptOffer?: (offerId: string) => void;
     onDeclineOffer?: (offerId: string) => void;
 }
@@ -198,76 +198,84 @@ export default function MyListingCard({
                 </div>
 
                 {/* Action Buttons */}
-                <div style={{
-                    display: 'flex',
-                    gap: '12px',
-                    marginTop: '16px',
-                    borderTop: '1px solid #f3f4f6',
-                    paddingTop: '16px',
-                }}>
-                    <button
-                        onClick={() => onToggleVisibility(id, status)}
-                        disabled={isSold}
-                        style={{
-                            flex: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '8px',
-                            padding: '8px 16px',
-                            backgroundColor: 'transparent',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            color: 'var(--vandy-black)',
-                            fontWeight: '600',
-                            fontSize: '13px',
-                            cursor: isSold ? 'not-allowed' : 'pointer',
-                            opacity: isSold ? 0.3 : 1,
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        {isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
-                        {isHidden ? 'Show' : 'Hide'}
-                    </button>
+                {(onToggleVisibility || onMarkSold || onDelete) && (
+                    <div style={{
+                        display: 'flex',
+                        gap: '12px',
+                        marginTop: '16px',
+                        borderTop: '1px solid #f3f4f6',
+                        paddingTop: '16px',
+                    }}>
+                        {onToggleVisibility && (
+                            <button
+                                onClick={() => onToggleVisibility(id, status)}
+                                disabled={isSold}
+                                style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    padding: '8px 16px',
+                                    backgroundColor: 'transparent',
+                                    border: '1px solid #e5e7eb',
+                                    borderRadius: '8px',
+                                    color: 'var(--vandy-black)',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: isSold ? 'not-allowed' : 'pointer',
+                                    opacity: isSold ? 0.3 : 1,
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {isHidden ? <Eye size={16} /> : <EyeOff size={16} />}
+                                {isHidden ? 'Show' : 'Hide'}
+                            </button>
+                        )}
 
-                    <button
-                        onClick={() => isSold ? onToggleVisibility(id, 'hidden') /* hack to reset, see page.tsx */ : onMarkSold(id)}
-                        style={{
-                            flex: 1,
-                            padding: '8px 16px',
-                            backgroundColor: isSold ? '#d4af37' : 'transparent',
-                            border: '1px solid #d4af37', // Gold border
-                            borderRadius: '8px',
-                            color: isSold ? 'white' : '#d4af37',
-                            fontWeight: '600',
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        {isSold ? 'Re-List' : 'Mark as Sold'}
-                    </button>
+                        {onMarkSold && (
+                            <button
+                                onClick={() => isSold ? onToggleVisibility && onToggleVisibility(id, 'hidden') : onMarkSold(id)}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 16px',
+                                    backgroundColor: isSold ? '#d4af37' : 'transparent',
+                                    border: '1px solid #d4af37', // Gold border
+                                    borderRadius: '8px',
+                                    color: isSold ? 'white' : '#d4af37',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                {isSold ? 'Re-List' : 'Mark as Sold'}
+                            </button>
+                        )}
 
-                    <button
-                        onClick={() => onDelete(id)}
-                        disabled={isSold}
-                        style={{
-                            padding: '8px',
-                            backgroundColor: 'transparent',
-                            border: '1px solid #fee2e2',
-                            borderRadius: '8px',
-                            color: '#ef4444', // Red for delete
-                            cursor: isSold ? 'not-allowed' : 'pointer',
-                            opacity: isSold ? 0.3 : 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            transition: 'all 0.2s'
-                        }}
-                    >
-                        <Trash2 size={16} />
-                    </button>
-                </div>
+                        {onDelete && (
+                            <button
+                                onClick={() => onDelete(id)}
+                                disabled={isSold}
+                                style={{
+                                    padding: '8px',
+                                    backgroundColor: 'transparent',
+                                    border: '1px solid #fee2e2',
+                                    borderRadius: '8px',
+                                    color: '#ef4444', // Red for delete
+                                    cursor: isSold ? 'not-allowed' : 'pointer',
+                                    opacity: isSold ? 0.3 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        )}
+                    </div>
+                )}
             </div>
         </div>
     );

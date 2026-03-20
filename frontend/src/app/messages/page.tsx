@@ -24,6 +24,7 @@ interface Conversation {
     buyer: UserParticipant;
     seller: UserParticipant;
     last_message_at: string;
+    unread_count?: number;
 }
 
 interface Message {
@@ -51,7 +52,7 @@ export default function MessagesPage() {
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (loading) return; // Wait for the auth check to finish
+        if (loading) return; 
         if (!user) {
             router.push('/login');
             return;
@@ -61,6 +62,14 @@ export default function MessagesPage() {
             try {
                 const data = await getConversations();
                 setConversations(data);
+                
+                // If we have an active conversation, update its unread count to 0 locally
+                if (activeConversation) {
+                    setConversations(prev => prev.map(c => 
+                        c.id === activeConversation.id ? { ...c, unread_count: 0 } : c
+                    ));
+                }
+
                 if (data.length > 0 && !activeConversation) {
                     const urlParams = new URLSearchParams(window.location.search);
                     const targetConvId = urlParams.get('conversationId');
@@ -80,10 +89,9 @@ export default function MessagesPage() {
 
         fetchConvos();
         
-        // Polling for new conversations (every 10 seconds)
         const intervalId = setInterval(fetchConvos, 10000);
         return () => clearInterval(intervalId);
-    }, [user, router]); // Intentionally omitting activeConversation to prevent resetting it
+    }, [user, router, activeConversation?.id]);
 
     useEffect(() => {
         if (!activeConversation) return;
@@ -101,7 +109,6 @@ export default function MessagesPage() {
         fetchChat();
         setLoadingMessages(true);
 
-        // Polling for active chat messages
         const intervalId = setInterval(fetchChat, 3000);
         return () => clearInterval(intervalId);
     }, [activeConversation]);
@@ -131,13 +138,11 @@ export default function MessagesPage() {
             } else {
                 await sendMessage(activeConversation.id, tempInput);
             }
-            // Re-fetch chat immediately
             const chatData = await getMessages(activeConversation.id);
             setMessages(chatData.messages);
             scrollToBottom();
         } catch (err) {
             console.error("Failed to send message", err);
-            // Revert input field on failure
             setMessageInput(tempInput);
         }
     };
@@ -145,7 +150,6 @@ export default function MessagesPage() {
     const handleUpdateOffer = async (messageId: string, status: 'accepted' | 'declined') => {
         try {
             await updateOfferStatus(messageId, status);
-            // Re-fetch chat immediately to show updated status
             if (activeConversation) {
                  const chatData = await getMessages(activeConversation.id);
                  setMessages(chatData.messages);
@@ -167,12 +171,11 @@ export default function MessagesPage() {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    if (!user) return null; // Wait for redirect
+    if (!user) return null;
 
     return (
         <div className={styles.pageContainer}>
             <main className={styles.messagesMain}>
-                {/* Left Sidebar */}
                 <div className={styles.sidebar}>
                     <div className={styles.sidebarHeader}>
                         <h1>Messages</h1>
@@ -196,24 +199,39 @@ export default function MessagesPage() {
                                 const isUserBuyer = conv.buyer.id === user.id;
                                 const otherParticipant = isUserBuyer ? conv.seller : conv.buyer;
                                 const participantName = otherParticipant.full_name || otherParticipant.email || 'Unknown';
+                                const isUnread = (conv.unread_count || 0) > 0;
                                 
                                 return (
                                     <div 
                                         key={conv.id} 
                                         className={`${styles.conversationItem} ${activeConversation?.id === conv.id ? styles.active : ''}`}
                                         onClick={() => setActiveConversation(conv)}
+                                        style={{ position: 'relative' }}
                                     >
                                         <div className={styles.avatar}>
                                             {getInitials(otherParticipant.full_name, otherParticipant.email)}
                                         </div>
                                         <div className={styles.conversationDetails}>
                                             <div className={styles.conversationHeader}>
-                                                <h3 className={styles.participantName}>{participantName}</h3>
+                                                <h3 className={styles.participantName} style={{ fontWeight: isUnread ? '800' : '600' }}>
+                                                    {participantName}
+                                                </h3>
+                                                {isUnread && (
+                                                    <div style={{
+                                                        width: '10px',
+                                                        height: '10px',
+                                                        backgroundColor: '#ef4444',
+                                                        borderRadius: '50%',
+                                                        marginLeft: '8px'
+                                                    }} />
+                                                )}
                                             </div>
-                                            <p className={styles.listingInfo}>
+                                            <p className={styles.listingInfo} style={{ fontWeight: isUnread ? '700' : '400', color: isUnread ? '#111827' : '#6b7280' }}>
                                                 {conv.listing.title} • ${conv.listing.price}
                                             </p>
-                                            <p className={styles.lastMessage}>View discussion</p>
+                                            <p className={styles.lastMessage} style={{ fontWeight: isUnread ? '700' : '400', color: isUnread ? 'var(--vandy-gold)' : '#9ca3af' }}>
+                                                {isUnread ? 'New message' : 'View discussion'}
+                                            </p>
                                         </div>
                                     </div>
                                 );
@@ -222,7 +240,6 @@ export default function MessagesPage() {
                     </div>
                 </div>
 
-                {/* Right Chat Area */}
                 <div className={styles.chatArea}>
                     {activeConversation ? (
                         <>

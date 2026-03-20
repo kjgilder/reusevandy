@@ -141,3 +141,120 @@
 .deleteButton:hover {
     background-color: #be123c;
 }
+
+/* Profile Section */
+.profileSection {
+    background-color: var(--vandy-white);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--vandy-sand);
+}
+
+.avatarContainer {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    cursor: pointer;
+}
+
+.avatar {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: var(--vandy-gold);
+    color: var(--vandy-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    font-weight: 800;
+    overflow: hidden;
+    object-fit: cover;
+    border: 4px solid var(--vandy-white);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.avatarOverlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s;
+    color: white;
+}
+
+.avatarContainer:hover .avatarOverlay {
+    opacity: 1;
+}
+
+.profileInfo h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--vandy-black);
+}
+
+.profileInfo p {
+    margin: 4px 0 0 0;
+    color: var(--vandy-grey);
+    font-weight: 500;
+}
+
+/* Accordions */
+.accordion {
+    margin-bottom: 32px;
+    background-color: var(--vandy-white);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--vandy-sand);
+}
+
+.accordionHeader {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    background-color: var(--vandy-white);
+    transition: background-color 0.2s;
+}
+
+.accordionHeader:hover {
+    background-color: #f9fafb;
+}
+
+.accordionHeader h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--vandy-black);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.accordionContent {
+    padding: 0 24px 24px 24px;
+}
+
+.sectionHeader {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--vandy-black);
+    margin: 40px 0 20px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}

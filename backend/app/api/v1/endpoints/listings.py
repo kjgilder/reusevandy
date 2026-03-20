@@ -92,14 +92,34 @@ async def read_my_listings(
     limit: int = 100,
 ) -> Any:
     """
-    Retrieve listings for the current user.
+    Retrieve listings created by the current user.
     """
     query = Listing.find(Listing.seller.id == current_user.id)
     query = query.sort("-created_at")
 
     listings = await query.skip(skip).limit(limit).to_list()
 
-    # We need to fetch related seller data for response model
+    for listing in listings:
+        await listing.fetch_link(Listing.seller)
+
+    return listings
+
+
+@router.get("/purchased", response_model=List[ListingOut])
+async def read_purchased_listings(
+    current_user: User = Depends(deps.get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve listings purchased by the current user.
+    """
+    # Find listings where buyer.id == current_user.id
+    query = Listing.find(Listing.buyer.id == current_user.id)
+    query = query.sort("-updated_at")
+
+    listings = await query.skip(skip).limit(limit).to_list()
+
     for listing in listings:
         await listing.fetch_link(Listing.seller)
 
@@ -214,5 +234,31 @@ async def upload_listing_image(
     # Save URL to listing
     listing.images.append(blob_url)
     await listing.set({"images": listing.images})
+
+    return listing
+
+
+@router.delete("/{id}/images")
+async def delete_listing_image(
+    id: UUID,
+    image_url: str = Query(...),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Remove a specific image URL from a listing.
+    """
+    listing = await Listing.get(id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    await listing.fetch_link(Listing.seller)
+    if listing.seller.id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    if image_url in listing.images:
+        listing.images.remove(image_url)
+        await listing.set({"images": listing.images})
+    else:
+        raise HTTPException(status_code=404, detail="Image URL not found in listing")
 
     return listing

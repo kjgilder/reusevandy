@@ -7,6 +7,7 @@ import { apiRequest } from '../utils/api';
 interface User {
     email: string;
     full_name?: string;
+    profile_picture?: string;
     id: string;
 }
 

@@ -57,6 +57,26 @@ export async function getMyListings() {
   return apiRequest('/listings/me');
 }
 
+export async function getPurchasedListings() {
+  return apiRequest('/listings/purchased');
+}
+
+export async function updateProfile(data: { full_name?: string; profile_picture?: string }) {
+  return apiRequest('/auth/me', {
+    method: 'PATCH',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function uploadProfilePicture(file: File) {
+  const formData = new FormData();
+  formData.append('file', file);
+  return apiRequest('/auth/profile-picture', {
+    method: 'POST',
+    body: formData,
+  });
+}
+
 export async function updateListingStatus(listingId: string, status: string) {
   return apiRequest(`/listings/${listingId}`, {
     method: 'PUT',
@@ -73,6 +93,12 @@ export async function updateListing(listingId: string, data: Record<string, unkn
 
 export async function deleteListing(listingId: string) {
   return apiRequest(`/listings/${listingId}`, {
+    method: 'DELETE',
+  });
+}
+
+export async function deleteListingImage(listingId: string, imageUrl: string) {
+  return apiRequest(`/listings/${listingId}/images?image_url=${encodeURIComponent(imageUrl)}`, {
     method: 'DELETE',
   });
 }
@@ -102,11 +128,24 @@ export async function getPendingOffers() {
   return apiRequest('/messages/offers/pending');
 }
 
+export interface Conversation {
+  id: string;
+  listing: any;
+  buyer: any;
+  seller: any;
+  last_message_at: string;
+  unread_count?: number;
+}
+
 export async function sendMessage(conversationId: string, content: string) {
   return apiRequest(`/messages/${conversationId}/text`, {
     method: 'POST',
     body: JSON.stringify({ content }),
   });
+}
+
+export async function getUnreadTotal() {
+  return apiRequest('/messages/unread/total');
 }
 
 export async function updateOfferStatus(messageId: string, status: 'accepted' | 'declined') {
