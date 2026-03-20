@@ -18,9 +18,10 @@ class Category(str, Enum):
 
 
 class ListingStatus(str, Enum):
-    AVAILABLE = "available"
+    ACTIVE = "active"
     PENDING = "pending"
     SOLD = "sold"
+    CANCELLED = "cancelled"
     HIDDEN = "hidden"
 
 
@@ -33,7 +34,9 @@ class Listing(Document):
     images: List[str] = []  # List of Vercel Blob URLs
     seller: Link[User]
     buyer: Optional[Link[User]] = None
-    status: ListingStatus = ListingStatus.AVAILABLE
+    status: ListingStatus = ListingStatus.ACTIVE
+    seller_confirmed_sold: bool = False
+    buyer_confirmed_sold: bool = False
     views: int = 0
     message_count: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

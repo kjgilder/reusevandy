@@ -14,7 +14,10 @@ import {
     getPendingOffers, 
     updateOfferStatus,
     uploadProfilePicture,
-    updateProfile 
+    updateProfile,
+    confirmTransaction,
+    revertToActive,
+    cancelListing
 } from '../../utils/api';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
@@ -30,7 +33,9 @@ interface Listing {
     price: number;
     category: string;
     images: string[];
-    status: 'available' | 'sold' | 'hidden' | 'pending';
+    status: 'active' | 'sold' | 'hidden' | 'pending' | 'cancelled';
+    seller_confirmed_sold?: boolean;
+    buyer_confirmed_sold?: boolean;
     views: number;
     messageCount: number;
     created_at: string;
@@ -113,7 +118,7 @@ export default function MyListingsPage() {
     };
 
     const handleToggleVisibility = async (id: string, currentStatus: string) => {
-        const newStatus = (currentStatus === 'hidden' || currentStatus === 'sold') ? 'available' : 'hidden';
+        const newStatus = (currentStatus === 'hidden' || currentStatus === 'sold') ? 'active' : 'hidden';
         try {
             await updateListingStatus(id, newStatus);
             setListings(listings.map(l => l.id === id ? { ...l, status: newStatus as any } : l));
@@ -130,6 +135,26 @@ export default function MyListingsPage() {
         } catch (err) {
             console.error('Failed to mark as sold:', err);
             alert('Failed to mark listing as sold. Please try again.');
+        }
+    };
+
+    const handleConfirmSold = async (id: string) => {
+        try {
+            await confirmTransaction(id);
+            await fetchData();
+        } catch (err) {
+            console.error('Failed to confirm sale:', err);
+            alert('Failed to confirm sale. Please try again.');
+        }
+    };
+
+    const handleRevertActive = async (id: string) => {
+        try {
+            await revertToActive(id);
+            await fetchData();
+        } catch (err) {
+            console.error('Failed to revert listing:', err);
+            alert('Failed to revert listing. Please try again.');
         }
     };
 
@@ -191,9 +216,9 @@ export default function MyListingsPage() {
         );
     }
 
-    const availableListings = listings.filter(l => l.status === 'available' || l.status === 'pending');
+    const activeListings = listings.filter(l => l.status === 'active' || l.status === 'pending');
     const soldListings = listings.filter(l => l.status === 'sold');
-    const hiddenListings = listings.filter(l => l.status === 'hidden');
+    const hiddenListings = listings.filter(l => l.status === 'hidden' || l.status === 'cancelled');
 
     const getInitials = (name: string, email: string) => {
         const str = name || email;
@@ -247,16 +272,16 @@ export default function MyListingsPage() {
                 {/* Active Listings Section */}
                 <div className={styles.sectionHeader}>
                     <Package size={20} />
-                    Active Listings ({availableListings.length})
+                    Active Listings ({activeListings.length})
                 </div>
                 
-                {availableListings.length === 0 ? (
+                {activeListings.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--vandy-grey)', backgroundColor: 'white', borderRadius: '16px', border: '1px dashed var(--vandy-sand)' }}>
                         You don't have any items currently listed.
                     </div>
                 ) : (
                     <div className={styles.listingsGrid}>
-                        {availableListings.map(listing => (
+                        {activeListings.map(listing => (
                             <MyListingCard
                                 key={listing.id}
                                 id={listing.id}
@@ -269,12 +294,16 @@ export default function MyListingsPage() {
                                 views={listing.views}
                                 messageCount={listing.messageCount}
                                 status={listing.status as any}
+                                sellerConfirmed={listing.seller_confirmed_sold}
+                                buyerConfirmed={listing.buyer_confirmed_sold}
                                 pendingOffers={listing.pendingOffers}
                                 onToggleVisibility={handleToggleVisibility}
                                 onMarkSold={handleMarkSold}
                                 onDelete={openDeleteModal}
                                 onAcceptOffer={(offerId) => handleAcceptOffer(offerId, listing.id)}
                                 onDeclineOffer={(offerId) => handleDeclineOffer(offerId, listing.id)}
+                                onConfirmSold={handleConfirmSold}
+                                onReverseActive={handleRevertActive}
                             />
                         ))}
                     </div>

@@ -21,13 +21,17 @@ interface MyListingCardProps {
     category: string;
     views?: number;
     messageCount?: number;
-    status: 'available' | 'sold' | 'hidden' | 'pending';
+    status: 'active' | 'sold' | 'hidden' | 'pending' | 'cancelled';
+    sellerConfirmed?: boolean;
+    buyerConfirmed?: boolean;
     pendingOffers?: PendingOffer[];
     onToggleVisibility?: (id: string, currentStatus: string) => void;
     onMarkSold?: (id: string) => void;
     onDelete?: (id: string) => void;
     onAcceptOffer?: (offerId: string) => void;
     onDeclineOffer?: (offerId: string) => void;
+    onConfirmSold?: (id: string) => void;
+    onReverseActive?: (id: string) => void;
 }
 
 export default function MyListingCard({
@@ -46,11 +50,16 @@ export default function MyListingCard({
     onMarkSold,
     onDelete,
     onAcceptOffer,
-    onDeclineOffer
+    onDeclineOffer,
+    onConfirmSold,
+    onReverseActive,
+    sellerConfirmed = false,
+    buyerConfirmed = false
 }: MyListingCardProps) {
     const imageUrl = image ? (image.startsWith('http') ? image : `${BASE_URL}${image}`) : null;
-    const isHidden = status === 'hidden';
+    const isHidden = status === 'hidden' || status === 'cancelled';
     const isSold = status === 'sold';
+    const isPending = status === 'pending';
 
     return (
         <div style={{
@@ -83,8 +92,8 @@ export default function MyListingCard({
                     </div>
                 )}
 
-                {/* Overlays for Sold/Hidden */}
-                {(isSold || isHidden) && (
+                {/* Overlays for Sold/Hidden/Pending */}
+                {(isSold || isHidden || isPending) && (
                     <div style={{
                         position: 'absolute',
                         inset: 0,
@@ -95,7 +104,9 @@ export default function MyListingCard({
                         zIndex: 2
                     }}>
                         <div style={{
-                            backgroundColor: isSold ? 'rgba(212, 175, 55, 0.8)' : 'rgba(128, 128, 128, 0.8)', // Gold for sold, Grey for hidden
+                            backgroundColor: isSold ? 'rgba(212, 175, 55, 0.8)' : 
+                                            isPending ? 'rgba(3, 105, 161, 0.8)' : 
+                                            'rgba(128, 128, 128, 0.8)',
                             padding: '8px 24px',
                             borderRadius: '8px',
                             color: 'white',
@@ -104,7 +115,7 @@ export default function MyListingCard({
                             fontSize: '18px',
                             backdropFilter: 'blur(4px)'
                         }}>
-                            {isSold ? 'SOLD' : 'HIDDEN'}
+                            {isSold ? 'SOLD' : isPending ? 'PENDING' : 'HIDDEN'}
                         </div>
                     </div>
                 )}
@@ -148,7 +159,7 @@ export default function MyListingCard({
                 }}>{description}</p>
 
                 {/* Pending Offers Section */}
-                {pendingOffers && pendingOffers.length > 0 && status === 'available' && (
+                {pendingOffers && pendingOffers.length > 0 && status === 'active' && (
                     <div style={{ marginTop: '12px', backgroundColor: '#f0f9ff', borderRadius: '8px', padding: '12px', border: '1px solid #bae6fd' }}>
                         <h4 style={{ fontSize: '11px', textTransform: 'uppercase', color: '#0369a1', marginBottom: '8px', fontWeight: '700', letterSpacing: '0.05em' }}>
                             Pending Offers
@@ -188,6 +199,25 @@ export default function MyListingCard({
                     </div>
                 )}
 
+                {/* Pending Transaction Confirmation Status */}
+                {isPending && (
+                    <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '8px' }}>
+                            Sale Confirmation
+                        </div>
+                        <div style={{ display: 'flex', gap: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: sellerConfirmed ? '#059669' : '#94a3b8' }}>
+                                <CheckCircle size={14} fill={sellerConfirmed ? '#059669' : 'transparent'} color={sellerConfirmed ? 'white' : '#94a3b8'} />
+                                Seller Confirmed
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '13px', color: buyerConfirmed ? '#059669' : '#94a3b8' }}>
+                                <CheckCircle size={14} fill={buyerConfirmed ? '#059669' : 'transparent'} color={buyerConfirmed ? 'white' : '#94a3b8'} />
+                                Buyer Confirmed
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Metrics Row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '13px', color: 'var(--vandy-grey)' }}>
                     <div style={{ display: 'flex', gap: '16px' }}>
@@ -198,14 +228,67 @@ export default function MyListingCard({
                 </div>
 
                 {/* Action Buttons */}
-                {(onToggleVisibility || onMarkSold || onDelete) && (
+                {(onToggleVisibility || onMarkSold || onDelete || onConfirmSold || onReverseActive) && (
                     <div style={{
                         display: 'flex',
                         gap: '12px',
                         marginTop: '16px',
                         borderTop: '1px solid #f3f4f6',
                         paddingTop: '16px',
+                        flexWrap: 'wrap'
                     }}>
+                        {isPending && onConfirmSold && (
+                            <button
+                                onClick={() => onConfirmSold(id)}
+                                disabled={sellerConfirmed}
+                                style={{
+                                    flex: '1 1 100%',
+                                    marginBottom: '8px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    padding: '10px 16px',
+                                    backgroundColor: sellerConfirmed ? '#ecfdf5' : 'var(--vandy-gold)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    color: sellerConfirmed ? '#059669' : 'white',
+                                    fontWeight: '700',
+                                    fontSize: '14px',
+                                    cursor: sellerConfirmed ? 'default' : 'pointer',
+                                    transition: 'all 0.2s',
+                                    boxShadow: sellerConfirmed ? 'none' : 'var(--shadow-sm)'
+                                }}
+                            >
+                                <CheckCircle size={18} />
+                                {sellerConfirmed ? 'Confirmed' : 'Confirm Sale to Buyer'}
+                            </button>
+                        )}
+
+                        {isPending && onReverseActive && (
+                            <button
+                                onClick={() => onReverseActive(id)}
+                                style={{
+                                    flex: 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    padding: '8px 16px',
+                                    backgroundColor: '#fef2f2',
+                                    border: '1px solid #fee2e2',
+                                    borderRadius: '8px',
+                                    color: '#b91c1c',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: 'pointer',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <XCircle size={16} />
+                                Reverse to Active
+                            </button>
+                        )}
                         {onToggleVisibility && (
                             <button
                                 onClick={() => onToggleVisibility(id, status)}

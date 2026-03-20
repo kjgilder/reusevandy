@@ -1,0 +1,175 @@
+
+> frontend@0.1.0 dev
+> next dev
+
+▲ Next.js 16.1.4 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://10.71.63.56:3000
+
+✓ Starting...
+✓ Ready in 1086ms
+○ Compiling /home ...
+ GET /home 200 in 4.7s (compile: 4.4s, render: 335ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 707ms (compile: 676ms, render: 32ms)
+ GET /home 200 in 28ms (compile: 7ms, render: 21ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /my-listings 200 in 649ms (compile: 621ms, render: 28ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 18ms (compile: 3ms, render: 15ms)
+ GET /home 200 in 17ms (compile: 2ms, render: 14ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages?conversationId=8a3cc81a-57f2-4b1c-8345-63e051f48aec 200 in 27ms (compile: 4ms, render: 23ms)
+ GET /home 200 in 36ms (compile: 7ms, render: 28ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+ GET /my-listings 200 in 24ms (compile: 5ms, render: 19ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+ GET /my-listings 200 in 217ms (compile: 5ms, render: 211ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+ GET /my-listings 200 in 105ms (compile: 11ms, render: 94ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 40ms (compile: 8ms, render: 32ms)
+ GET /home 200 in 24ms (compile: 4ms, render: 20ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /home 200 in 110ms (compile: 15ms, render: 96ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 114ms (compile: 60ms, render: 53ms)
+ GET /my-listings 200 in 112ms (compile: 64ms, render: 47ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages?conversationId=8a3cc81a-57f2-4b1c-8345-63e051f48aec 200 in 22ms (compile: 3ms, render: 19ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /login 200 in 1010ms (compile: 985ms, render: 26ms)
+ GET /home 200 in 24ms (compile: 3ms, render: 21ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /home 200 in 206ms (compile: 70ms, render: 136ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /login 200 in 217ms (compile: 80ms, render: 137ms)
+ GET / 200 in 260ms (compile: 218ms, render: 42ms)
+ GET /login 200 in 32ms (compile: 5ms, render: 28ms)
+ GET /home 200 in 28ms (compile: 7ms, render: 21ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+ GET /home 200 in 79ms (compile: 20ms, render: 59ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/5b68a9c1-8215-48e2-b29c-d684ca4165f0.png resolved to private ip ["127.0.0.1"]
+✓ Compiled in 307ms
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /home 200 in 775ms (compile: 409ms, render: 366ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+✓ Compiled in 922ms
+✓ Compiled in 187ms
+✓ Compiled in 277ms
+ GET / 200 in 248ms (compile: 128ms, render: 121ms)
+ GET /login 200 in 349ms (compile: 297ms, render: 51ms)
+ GET /signup 200 in 2.8s (compile: 2.5s, render: 269ms)
+ GET /login 200 in 50ms (compile: 13ms, render: 37ms)
+ GET /home 200 in 173ms (compile: 102ms, render: 71ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /home 200 in 219ms (compile: 8ms, render: 211ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /signup 200 in 78ms (compile: 14ms, render: 63ms)
+ GET /home 200 in 18ms (compile: 3ms, render: 15ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 177ms (compile: 137ms, render: 39ms)
+ GET /messages 200 in 20ms (compile: 1912µs, render: 18ms)
+ GET /messages 200 in 27ms (compile: 3ms, render: 23ms)
+ GET /login 200 in 92ms (compile: 10ms, render: 82ms)
+ GET /login 200 in 58ms (compile: 17ms, render: 41ms)
+✓ Compiled in 110ms
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /login 200 in 1225ms (compile: 339ms, render: 886ms)
+ GET /messages 200 in 1149ms (compile: 585ms, render: 563ms)
+ GET /messages 200 in 289ms (compile: 5ms, render: 284ms)
+✓ Compiled in 320ms
+✓ Compiled in 41ms
+ GET /login 200 in 60ms (compile: 2ms, render: 58ms)
+✓ Compiled in 648ms
+ GET /messages 200 in 347ms (compile: 213ms, render: 134ms)
+ GET /messages 200 in 75ms (compile: 20ms, render: 56ms)
+ GET /home 200 in 194ms (compile: 158ms, render: 36ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /my-listings 200 in 166ms (compile: 136ms, render: 30ms)
+ GET /home 200 in 22ms (compile: 4ms, render: 19ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 30ms (compile: 5ms, render: 24ms)
+ GET /messages 200 in 46ms (compile: 3ms, render: 43ms)
+ GET /home 200 in 19ms (compile: 3ms, render: 17ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /home 200 in 275ms (compile: 16ms, render: 260ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /home 200 in 131ms (compile: 5ms, render: 126ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /signup 200 in 139ms (compile: 109ms, render: 30ms)
+ GET /login 200 in 40ms (compile: 7ms, render: 33ms)
+ GET /home 200 in 21ms (compile: 4ms, render: 17ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 38ms (compile: 12ms, render: 25ms)
+ GET /messages 200 in 139ms (compile: 7ms, render: 132ms)
+ GET /home 200 in 26ms (compile: 2ms, render: 24ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /my-listings 200 in 26ms (compile: 5ms, render: 21ms)
+ GET /home 200 in 20ms (compile: 4ms, render: 16ms)
+ GET /home 200 in 18ms (compile: 3ms, render: 15ms)
+ GET /messages 200 in 20ms (compile: 3ms, render: 17ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /login 200 in 86ms (compile: 12ms, render: 74ms)
+ GET /home 200 in 44ms (compile: 3ms, render: 41ms)
+⨯ upstream image http://127.0.0.1:8000/static/images/1d2c1ef5-1b12-49ca-9e1f-dc2c67143f50.png resolved to private ip ["127.0.0.1"]
+ GET /messages 200 in 25ms (compile: 6ms, render: 19ms)
+ GET /home 200 in 26ms (compile: 3ms, render: 24ms)
+ GET /home 200 in 29ms (compile: 5ms, render: 24ms)
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+✓ Compiled in 131ms
+⚠ Fast Refresh had to perform a full reload when ./src/utils/api.ts changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ GET /home 200 in 1828ms (compile: 357ms, render: 1470ms)
+ GET /login 200 in 827ms (compile: 192ms, render: 635ms)
+ GET /home 200 in 286ms (compile: 34ms, render: 252ms)
+✓ Compiled in 48ms
+✓ Compiled in 124ms
+ GET /home 200 in 264ms (compile: 3ms, render: 261ms)
+ GET /home 200 in 204ms (compile: 8ms, render: 196ms)
+⚠ Fast Refresh had to perform a full reload when ./src/context/AuthContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./src/context/AuthContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+⚠ Fast Refresh had to perform a full reload when ./src/context/AuthContext.tsx changed. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+✓ Compiled in 300ms
+ GET /home 200 in 538ms (compile: 6ms, render: 532ms)
+ GET /login 200 in 452ms (compile: 89ms, render: 363ms)
+ GET /home 200 in 218ms (compile: 34ms, render: 184ms)
+ GET /home 200 in 137ms (compile: 15ms, render: 122ms)
+ GET /home 200 in 101ms (compile: 6ms, render: 95ms)
+ GET /my-listings 200 in 419ms (compile: 301ms, render: 118ms)
+ GET /login 200 in 380ms (compile: 12ms, render: 368ms)
+ GET /login 200 in 312ms (compile: 23ms, render: 290ms)
+ GET /login 200 in 70ms (compile: 6ms, render: 64ms)
+ GET /home 200 in 137ms (compile: 4ms, render: 133ms)
+ GET /login 200 in 110ms (compile: 4ms, render: 106ms)
+✓ Compiled in 91ms
+ GET /login 200 in 226ms (compile: 161ms, render: 65ms)
+ GET /login 200 in 228ms (compile: 193ms, render: 35ms)
+[?25h

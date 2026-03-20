@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://127.0.0.1:8000';
+export const BASE_URL = 'http://localhost:8000';
 const API_URL = `${BASE_URL}/api/v1`;
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
@@ -102,8 +102,12 @@ export async function deleteListingImage(listingId: string, imageUrl: string) {
     method: 'DELETE',
   });
 }
-export async function getConversations() {
-  return apiRequest('/messages/');
+export async function getConversations(filters: { role?: 'buying' | 'selling'; search?: string; filter?: 'active' | 'past' } = {}) {
+  const params = new URLSearchParams();
+  if (filters.role) params.append('role', filters.role);
+  if (filters.search) params.append('search', filters.search);
+  if (filters.filter) params.append('filter', filters.filter);
+  return apiRequest(`/messages/?${params.toString()}`);
 }
 
 export async function getMessages(conversationId: string) {
@@ -159,5 +163,23 @@ export async function updateOfferAmount(messageId: string, offer_amount: number)
   return apiRequest(`/messages/message/${messageId}/offer`, {
     method: 'PUT',
     body: JSON.stringify({ listing_id: 'placeholder', offer_amount }), // listing_id ignored in backend for this route
+  });
+}
+
+export async function confirmTransaction(listingId: string) {
+  return apiRequest(`/listings/${listingId}/confirm-sold`, {
+    method: 'POST',
+  });
+}
+
+export async function revertToActive(listingId: string) {
+  return apiRequest(`/listings/${listingId}/revert-active`, {
+    method: 'POST',
+  });
+}
+
+export async function cancelListing(listingId: string) {
+  return apiRequest(`/listings/${listingId}/cancel`, {
+    method: 'POST',
   });
 }

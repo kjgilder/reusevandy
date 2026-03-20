@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from fastapi import APIRouter, Depends, HTTPException, status, Query
+from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, timezone
 
 from app.api import deps
 from app.models.user import User
-from app.models.listing import Listing
+from app.models.listing import Listing, ListingStatus
 from app.models.message import Conversation, Message
 from app.core import email
 from app.schemas.message import (
@@ -23,32 +23,73 @@ from beanie.operators import Or, And
 router = APIRouter()
 
 @router.get("/", response_model=List[ConversationOut])
-async def get_conversations(current_user: User = Depends(deps.get_current_user)):
-    """Get all conversations for the current user (either as buyer or seller)."""
-    # Fetch conversations where the user is either the buyer or seller
-    conversations = await Conversation.find(
-        Or(
+async def get_conversations(
+    role: Optional[str] = Query(None, enum=["buying", "selling"]),
+    search: Optional[str] = None,
+    filter: Optional[str] = Query("active", enum=["active", "past"]),
+    current_user: User = Depends(deps.get_current_user)
+):
+    """Get conversations with filtering by role and search query."""
+    filters = []
+    
+    # Role filtering
+    if role == "buying":
+        filters.append(Conversation.buyer.id == current_user.id)
+    elif role == "selling":
+        filters.append(Conversation.seller.id == current_user.id)
+    else:
+        filters.append(Or(
             Conversation.buyer.id == current_user.id,
             Conversation.seller.id == current_user.id
-        )
-    ).sort("-last_message_at").to_list()
+        ))
+
+    # Basic find
+    query = Conversation.find(*filters)
     
-    # We need to explicitly fetch links in Beanie
+    # Fetch conversations and filter by listing status
+    conversations = await query.sort("-last_message_at").to_list()
+    
+    # Manual filter and search
     results = []
     for conv in conversations:
         await conv.fetch_all_links()
         if getattr(conv, "listing", None):
             await conv.listing.fetch_link(Listing.seller)
+            
+        # Filter by transaction status
+        if conv.listing:
+            is_sold = conv.listing.status == ListingStatus.SOLD
+            if filter == "past" and not is_sold:
+                continue
+            if filter == "active" and is_sold:
+                continue
+        match = True
+        if search:
+            search_lower = search.lower()
+            listing_match = search_lower in (conv.listing.title.lower() if conv.listing else "")
+            
+            # Name match (check the OTHER person in the conversation)
+            other_user = conv.seller if str(current_user.id) == str(conv.buyer.id) else conv.buyer
+            name_match = search_lower in (other_user.full_name.lower() if other_user.full_name else "") or \
+                         search_lower in other_user.email.lower()
+            
+            # Content match (check messages in this conversation)
+            content_match = await Message.find(
+                Message.conversation.id == conv.id,
+                {"content": {"$regex": search, "$options": "i"}}
+            ).count() > 0
+            
+            match = listing_match or name_match or content_match
+            
+        if not match:
+            continue
         
-        # Calculate unread count for the current user
-        # Unread messages are those NOT sent by the current user and where is_read is False
         unread_count = await Message.find(
             Message.conversation.id == conv.id,
             Message.sender.id != current_user.id,
             Message.is_read == False
         ).count()
         
-        # Convert to schema manually since we added a calculated field
         results.append(ConversationOut(
             id=conv.id,
             listing=conv.listing,
@@ -350,12 +391,12 @@ async def update_offer_status(
     message.offer_status = status_update.status
     await message.save()
     
-    # If accepted, mark the listing as sold and set the buyer
+    # If accepted, mark the listing as pending and set the buyer
     if status_update.status == "accepted":
         conv = message.conversation
         await conv.listing.fetch_link(Listing.seller)
         listing = conv.listing
-        listing.status = "sold" # Use the string exact value from ListingStatus enum
+        listing.status = ListingStatus.PENDING
         listing.buyer = conv.buyer # Set the buyer from the conversation
         await listing.save()
     
