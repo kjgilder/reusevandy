@@ -31,6 +31,11 @@ class UserUpdateInfo(BaseModel):
     profile_picture: Optional[str] = None
 
 
+class ChangePassword(BaseModel):
+    current_password: str
+    new_password: str
+
+
 class UserOut(UserBase):
     id: UUID
 

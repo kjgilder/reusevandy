@@ -7,6 +7,8 @@ backend/__pycache__/
 frontend/node_modules/
 frontend/.next/
 frontend/out/
+.next/
+package-lock.json
 backend/fix_image.py
 backend/fix_image_direct.py
 backend/backend.log
