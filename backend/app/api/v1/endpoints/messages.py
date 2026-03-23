@@ -53,16 +53,24 @@ async def get_conversations(
     results = []
     for conv in conversations:
         await conv.fetch_all_links()
-        if getattr(conv, "listing", None):
+        
+        # Ensure listing is an actual Listing Document (might be Link if not found)
+        if not hasattr(conv.listing, "fetch_link"):
+             # If it doesn't have fetch_link, it's either None or already a Document
+             # but we check isinstance below anyway
+             pass
+        else:
             await conv.listing.fetch_link(Listing.seller)
             
         # Filter by transaction status
-        if conv.listing:
-            is_sold = conv.listing.status == ListingStatus.SOLD
-            if filter == "past" and not is_sold:
-                continue
-            if filter == "active" and is_sold:
-                continue
+        if not isinstance(conv.listing, Listing):
+            continue
+            
+        is_sold = conv.listing.status == ListingStatus.SOLD
+        if filter == "past" and not is_sold:
+            continue
+        if filter == "active" and is_sold:
+            continue
         
         match = True
         if search:
@@ -85,6 +93,10 @@ async def get_conversations(
         if not match:
             continue
         
+        # Ensure all participants are successfully fetched
+        if not isinstance(conv.buyer, User) or not isinstance(conv.seller, User):
+            continue
+
         unread_count = await Message.find(
             Message.conversation.id == conv.id,
             Message.sender.id != current_user.id,
@@ -146,19 +158,22 @@ async def get_pending_offers(current_user: User = Depends(deps.get_current_user)
     results = []
     for msg in messages:
         await msg.fetch_all_links()
-        await msg.conversation.fetch_all_links()
         
-        buyer = msg.conversation.buyer
-        buyer_name = buyer.full_name or buyer.email or "Unknown"
-        buyer_initials = buyer_name[:2].upper()
-        
+        # Ensure conversation and listing are fetched
+        if not hasattr(msg.conversation, "listing") or not isinstance(msg.conversation.listing, Listing):
+            continue
+            
+        # Ensure sender is fetched
+        if not isinstance(msg.sender, User):
+            continue
+            
         results.append(PendingOfferOut(
             id=msg.id,
             listing_id=msg.conversation.listing.id,
             offer_amount=msg.offer_amount,
             created_at=msg.created_at,
-            buyer_name=buyer_name,
-            buyer_initials=buyer_initials
+            buyer_name=msg.sender.full_name or msg.sender.email,
+            buyer_initials=(msg.sender.full_name[0] if msg.sender.full_name else msg.sender.email[0]).upper()
         ))
         
     return results
@@ -174,8 +189,15 @@ async def get_conversation_details(
         raise HTTPException(status_code=404, detail="Conversation not found")
         
     await conversation.fetch_all_links()
-    if getattr(conversation, "listing", None):
+    
+    # Ensure listing is an actual Listing Document
+    if hasattr(conversation.listing, "fetch_link"):
         await conversation.listing.fetch_link(Listing.seller)
+        
+    if not isinstance(conversation.listing, Listing) or \
+       not isinstance(conversation.buyer, User) or \
+       not isinstance(conversation.seller, User):
+        raise HTTPException(status_code=404, detail="Incomplete conversation data")
     
     if str(current_user.id) not in [str(conversation.buyer.id), str(conversation.seller.id)]:
         raise HTTPException(status_code=403, detail="Not authorized to view this conversation")
@@ -188,8 +210,11 @@ async def get_conversation_details(
     ).set({"is_read": True})
 
     messages = await Message.find(Message.conversation.id == conversation.id).sort("created_at").to_list()
+    valid_messages = []
     for msg in messages:
         await msg.fetch_all_links()
+        if isinstance(msg.sender, User):
+            valid_messages.append(msg)
         
     return {
         "id": conversation.id,
@@ -198,7 +223,7 @@ async def get_conversation_details(
         "seller": conversation.seller,
         "last_message_at": conversation.last_message_at,
         "unread_count": 0, # Since we just marked them all as read
-        "messages": messages
+        "messages": valid_messages
     }
 
 @router.post("/offer", response_model=MessageOut)
@@ -212,6 +237,8 @@ async def create_offer(
         raise HTTPException(status_code=404, detail="Listing not found")
         
     await listing.fetch_link(Listing.seller)
+    if not isinstance(listing.seller, User):
+        raise HTTPException(status_code=404, detail="Seller not found")
     
     if str(listing.seller.id) == str(current_user.id):
         raise HTTPException(status_code=400, detail="You cannot make an offer on your own listing")
@@ -278,6 +305,8 @@ async def initiate_conversation(
         raise HTTPException(status_code=404, detail="Listing not found")
         
     await listing.fetch_link(Listing.seller)
+    if not isinstance(listing.seller, User):
+        raise HTTPException(status_code=404, detail="Seller not found")
     
     if str(listing.seller.id) == str(current_user.id):
         raise HTTPException(status_code=400, detail="You cannot message yourself")

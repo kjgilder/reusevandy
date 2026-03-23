@@ -78,11 +78,14 @@ async def read_listings(
 
     listings = await query.skip(skip).limit(limit).to_list()
 
+    valid_listings = []
     # We need to fetch related seller data for response model
     for listing in listings:
         await listing.fetch_link(Listing.seller)
+        if isinstance(listing.seller, User):
+            valid_listings.append(listing)
 
-    return listings
+    return valid_listings
 
 
 @router.get("/me", response_model=List[ListingOut])
@@ -99,10 +102,13 @@ async def read_my_listings(
 
     listings = await query.skip(skip).limit(limit).to_list()
 
+    valid_listings = []
     for listing in listings:
         await listing.fetch_link(Listing.seller)
+        if isinstance(listing.seller, User):
+            valid_listings.append(listing)
 
-    return listings
+    return valid_listings
 
 
 @router.get("/purchased", response_model=List[ListingOut])
@@ -120,10 +126,13 @@ async def read_purchased_listings(
 
     listings = await query.skip(skip).limit(limit).to_list()
 
+    valid_listings = []
     for listing in listings:
         await listing.fetch_link(Listing.seller)
+        if isinstance(listing.seller, User):
+            valid_listings.append(listing)
 
-    return listings
+    return valid_listings
 
 
 @router.get("/{id}", response_model=ListingOut)
