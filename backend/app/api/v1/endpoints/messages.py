@@ -100,7 +100,7 @@ async def get_conversations(
         unread_count = await Message.find(
             Message.conversation.id == conv.id,
             Message.sender.id != current_user.id,
-            Message.is_read == False
+            Message.is_read == False  # noqa: E712
         ).count()
         
         results.append(ConversationOut(
@@ -134,7 +134,7 @@ async def get_unread_total(current_user: User = Depends(deps.get_current_user)):
     total_unread = await Message.find(
         In(Message.conversation.id, conv_ids),
         Message.sender.id != current_user.id,
-        Message.is_read == False
+        Message.is_read == False  # noqa: E712
     ).count()
     
     return {"total": total_unread}
@@ -150,7 +150,7 @@ async def get_pending_offers(current_user: User = Depends(deps.get_current_user)
     
     from beanie.operators import In
     messages = await Message.find(
-        Message.is_offer == True,
+        Message.is_offer == True,  # noqa: E712
         Message.offer_status == "pending",
         In(Message.conversation.id, conv_ids)
     ).sort("-created_at").to_list()
@@ -206,7 +206,7 @@ async def get_conversation_details(
     await Message.find(
         Message.conversation.id == conversation.id,
         Message.sender.id != current_user.id,
-        Message.is_read == False
+        Message.is_read == False  # noqa: E712
     ).set({"is_read": True})
 
     messages = await Message.find(Message.conversation.id == conversation.id).sort("created_at").to_list()
