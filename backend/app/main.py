@@ -23,7 +23,9 @@ async def lifespan(app: FastAPI):
     )
     app.mongodb = app.mongodb_client[settings.DATABASE_NAME]
 
-    await init_beanie(database=app.mongodb, document_models=[User, Listing, Conversation, Message])
+    await init_beanie(
+        database=app.mongodb, document_models=[User, Listing, Conversation, Message]
+    )
     print("Connected to MongoDB")
 
     # Ensure directory exists just in case
@@ -48,7 +50,9 @@ app.include_router(
     listings.router, prefix=f"{settings.API_V1_STR}/listings", tags=["listings"]
 )
 app.include_router(utils.router, prefix=f"{settings.API_V1_STR}/utils", tags=["utils"])
-app.include_router(messages.router, prefix=f"{settings.API_V1_STR}/messages", tags=["messages"])
+app.include_router(
+    messages.router, prefix=f"{settings.API_V1_STR}/messages", tags=["messages"]
+)
 
 # Set all CORS enabled origins
 app.add_middleware(

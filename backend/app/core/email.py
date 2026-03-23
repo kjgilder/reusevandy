@@ -6,6 +6,7 @@ import logging
 settings = get_settings()
 logger = logging.getLogger(__name__)
 
+
 async def send_email(to_email: str, subject: str, html_content: str):
     """
     Send an email using SendGrid.
@@ -18,9 +19,9 @@ async def send_email(to_email: str, subject: str, html_content: str):
         from_email=settings.EMAIL_FROM,
         to_emails=to_email,
         subject=subject,
-        html_content=html_content
+        html_content=html_content,
     )
-    
+
     try:
         sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
         response = sg.send(message)
@@ -30,7 +31,10 @@ async def send_email(to_email: str, subject: str, html_content: str):
         logger.error(f"Failed to send email to {to_email}: {str(e)}")
         return False
 
-async def send_new_offer_notification(seller_email: str, buyer_name: str, listing_title: str, offer_amount: float):
+
+async def send_new_offer_notification(
+    seller_email: str, buyer_name: str, listing_title: str, offer_amount: float
+):
     """
     Notify the seller of a new offer.
     """
@@ -48,7 +52,10 @@ async def send_new_offer_notification(seller_email: str, buyer_name: str, listin
     """
     return await send_email(seller_email, subject, html_content)
 
-async def send_new_message_notification(recipient_email: str, sender_name: str, listing_title: str):
+
+async def send_new_message_notification(
+    recipient_email: str, sender_name: str, listing_title: str
+):
     """
     Notify a user of a new message.
     """

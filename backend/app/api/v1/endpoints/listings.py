@@ -301,7 +301,9 @@ async def confirm_sold(
     elif buyer_id and current_user.id == buyer_id:
         listing.buyer_confirmed_sold = True
     else:
-        raise HTTPException(status_code=403, detail="Not authorized to confirm this transaction")
+        raise HTTPException(
+            status_code=403, detail="Not authorized to confirm this transaction"
+        )
 
     # Only mark as SOLD when both parties have confirmed
     if listing.seller_confirmed_sold and listing.buyer_confirmed_sold:

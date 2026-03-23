@@ -25,9 +25,11 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     password: Optional[str] = None
 
+
 class UserUpdateInfo(BaseModel):
     full_name: Optional[str] = None
     profile_picture: Optional[str] = None
+
 
 class UserOut(UserBase):
     id: UUID
