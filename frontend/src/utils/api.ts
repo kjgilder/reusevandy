@@ -1,4 +1,4 @@
-export const BASE_URL = 'http://localhost:8000';
+export const BASE_URL = 'http://127.0.0.1:8000';
 const API_URL = `${BASE_URL}/api/v1`;
 
 export async function apiRequest(endpoint: string, options: RequestInit = {}) {
@@ -129,14 +129,27 @@ export async function initiateConversation(data: { listing_id: string; content?:
 }
 
 export async function getPendingOffers() {
-  return apiRequest('/messages/offers/pending');
+  return apiRequest('/messages/pending-bids');
+}
+
+export interface UserParticipant {
+  id: string;
+  full_name: string;
+  email: string;
 }
 
 export interface Conversation {
   id: string;
-  listing: any;
-  buyer: any;
-  seller: any;
+  listing: {
+    id: string;
+    title: string;
+    price: number;
+    status: string;
+    seller_confirmed_sold: boolean;
+    buyer_confirmed_sold: boolean;
+  };
+  buyer: UserParticipant;
+  seller: UserParticipant;
   last_message_at: string;
   unread_count?: number;
 }

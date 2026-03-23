@@ -14,10 +14,8 @@ import {
     getPendingOffers, 
     updateOfferStatus,
     uploadProfilePicture,
-    updateProfile,
     confirmTransaction,
-    revertToActive,
-    cancelListing
+    revertToActive
 } from '../../utils/api';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
@@ -97,7 +95,7 @@ export default function MyListingsPage() {
         }
     };
 
-    const handleAcceptOffer = async (offerId: string, listingId: string) => {
+    const handleAcceptOffer = async (offerId: string) => {
         try {
             await updateOfferStatus(offerId, 'accepted');
             await fetchData(); // Refresh all to update status and potentially sold items
@@ -121,7 +119,7 @@ export default function MyListingsPage() {
         const newStatus = (currentStatus === 'hidden' || currentStatus === 'sold') ? 'active' : 'hidden';
         try {
             await updateListingStatus(id, newStatus);
-            setListings(listings.map(l => l.id === id ? { ...l, status: newStatus as any } : l));
+            setListings(listings.map(l => l.id === id ? { ...l, status: newStatus as Listing['status'] } : l));
         } catch (err) {
             console.error('Failed to update status:', err);
             alert('Failed to update listing status. Please try again.');
@@ -236,7 +234,7 @@ export default function MyListingsPage() {
                     <div className={styles.avatarContainer} onClick={handleAvatarClick}>
                         <div className={styles.avatar}>
                             {user?.profile_picture ? (
-                                <img src={user.profile_picture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <Image src={user.profile_picture} alt="Profile" width={80} height={80} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
                                 getInitials(user?.full_name || '', user?.email || '')
                             )}
@@ -277,7 +275,7 @@ export default function MyListingsPage() {
                 
                 {activeListings.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--vandy-grey)', backgroundColor: 'white', borderRadius: '16px', border: '1px dashed var(--vandy-sand)' }}>
-                        You don't have any items currently listed.
+                        You don&apos;t have any items currently listed.
                     </div>
                 ) : (
                     <div className={styles.listingsGrid}>
@@ -293,14 +291,14 @@ export default function MyListingsPage() {
                                 category={listing.category}
                                 views={listing.views}
                                 messageCount={listing.messageCount}
-                                status={listing.status as any}
+                                status={listing.status}
                                 sellerConfirmed={listing.seller_confirmed_sold}
                                 buyerConfirmed={listing.buyer_confirmed_sold}
                                 pendingOffers={listing.pendingOffers}
                                 onToggleVisibility={handleToggleVisibility}
                                 onMarkSold={handleMarkSold}
                                 onDelete={openDeleteModal}
-                                onAcceptOffer={(offerId) => handleAcceptOffer(offerId, listing.id)}
+                                onAcceptOffer={(offerId) => handleAcceptOffer(offerId)}
                                 onDeclineOffer={(offerId) => handleDeclineOffer(offerId, listing.id)}
                                 onConfirmSold={handleConfirmSold}
                                 onReverseActive={handleRevertActive}
@@ -328,7 +326,7 @@ export default function MyListingsPage() {
                                     category={listing.category}
                                     views={listing.views}
                                     messageCount={listing.messageCount}
-                                    status={listing.status as any}
+                                    status={listing.status}
                                     onToggleVisibility={handleToggleVisibility}
                                     onMarkSold={handleMarkSold}
                                     onDelete={openDeleteModal}
@@ -341,7 +339,7 @@ export default function MyListingsPage() {
                 {/* Sold Items Accordion */}
                 <div className={styles.accordion} style={{ marginTop: '60px' }}>
                     <div className={styles.accordionHeader} onClick={() => setIsSoldExpanded(!isSoldExpanded)}>
-                        <h2><Package size={20} color="var(--vandy-gold)" /> Items You've Sold ({soldListings.length})</h2>
+                        <h2><Package size={20} color="var(--vandy-gold)" /> Items You&apos;ve Sold ({soldListings.length})</h2>
                         {isSoldExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </div>
                     {isSoldExpanded && (
@@ -362,7 +360,7 @@ export default function MyListingsPage() {
                                             category={listing.category}
                                             views={listing.views}
                                             messageCount={listing.messageCount}
-                                            status={listing.status as any}
+                                            status={listing.status}
                                             onToggleVisibility={handleToggleVisibility}
                                             onDelete={openDeleteModal}
                                         />
@@ -376,7 +374,7 @@ export default function MyListingsPage() {
                 {/* Purchased Items Accordion */}
                 <div className={styles.accordion}>
                     <div className={styles.accordionHeader} onClick={() => setIsPurchasedExpanded(!isPurchasedExpanded)}>
-                        <h2><ShoppingBag size={20} color="var(--vandy-gold)" /> Items You've Purchased ({purchasedListings.length})</h2>
+                        <h2><ShoppingBag size={20} color="var(--vandy-gold)" /> Items You&apos;ve Purchased ({purchasedListings.length})</h2>
                         {isPurchasedExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
                     </div>
                     {isPurchasedExpanded && (

@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional
 from beanie import Document, Link
 from pydantic import Field
 from uuid import UUID, uuid4

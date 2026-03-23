@@ -50,7 +50,6 @@ export default function MessagesPage() {
     const [messageInput, setMessageInput] = useState('');
     const [isOfferMode, setIsOfferMode] = useState(false);
     const [loadingConversations, setLoadingConversations] = useState(true);
-    const [loadingMessages, setLoadingMessages] = useState(false);
     const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
     const [transacting, setTransacting] = useState(false);
     
@@ -93,7 +92,7 @@ export default function MessagesPage() {
                     const urlParams = new URLSearchParams(window.location.search);
                     const targetConvId = urlParams.get('conversationId');
                     if (targetConvId) {
-                        const target = data.find((c: any) => c.id === targetConvId);
+                        const target = data.find((c: Conversation) => c.id === targetConvId);
                         setActiveConversation(target || data[0]);
                     } else {
                         setActiveConversation(data[0]);
@@ -110,7 +109,7 @@ export default function MessagesPage() {
         
         const intervalId = setInterval(fetchConvos, 30000); // Polling every 30s
         return () => clearInterval(intervalId);
-    }, [user, router, activeConversation?.id, role, debouncedSearch, filter]);
+    }, [user, router, activeConversation, loading, role, debouncedSearch, filter]);
 
     useEffect(() => {
         if (!activeConversation) return;
@@ -122,12 +121,9 @@ export default function MessagesPage() {
                 scrollToBottom();
             } catch (err) {
                 console.error("Failed to fetch messages", err);
-            } finally {
-                setLoadingMessages(false);
             }
         };
 
-        setLoadingMessages(true);
         fetchChat();
 
         const intervalId = setInterval(fetchChat, 3000);
@@ -178,9 +174,10 @@ export default function MessagesPage() {
             // Refresh conversations to update listing status in sidebar
             const data = await getConversations({ role, search: debouncedSearch, filter });
             setConversations(data);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string };
             console.error("Failed to update offer status", err);
-            alert(err.message || "Errors updating offer. Make sure you are the seller.");
+            alert(error.message || "Errors updating offer. Make sure you are the seller.");
         }
     };
 
@@ -197,9 +194,10 @@ export default function MessagesPage() {
             // Update the active conversation's listing status in local state
             const updated = data.find((c: Conversation) => c.id === activeConversation.id);
             if (updated) setActiveConversation(updated);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string };
             console.error("Failed to complete transaction", err);
-            setTransactionStatus('error:' + (err.message || 'Failed to confirm transaction'));
+            setTransactionStatus('error:' + (error.message || 'Failed to confirm transaction'));
         } finally {
             setTransacting(false);
         }
@@ -217,9 +215,10 @@ export default function MessagesPage() {
             setConversations(data);
             const updated = data.find((c: Conversation) => c.id === activeConversation.id);
             if (updated) setActiveConversation(updated);
-        } catch (err: any) {
+        } catch (err: unknown) {
+            const error = err as { message?: string };
             console.error("Failed to cancel transaction", err);
-            setTransactionStatus('error:' + (err.message || 'Failed to cancel transaction'));
+            setTransactionStatus('error:' + (error.message || 'Failed to cancel transaction'));
         } finally {
             setTransacting(false);
         }
@@ -297,7 +296,7 @@ export default function MessagesPage() {
                         ) : (
                             (() => {
                                 // Group by listing
-                                const grouped: Record<string, { listing: any, convs: Conversation[] }> = {};
+                                const grouped: Record<string, { listing: Conversation['listing'], convs: Conversation[] }> = {};
                                 conversations.forEach(conv => {
                                     const lid = conv.listing.id;
                                     if (!grouped[lid]) {
@@ -473,7 +472,7 @@ export default function MessagesPage() {
                             )}
 
                             <div className={styles.messageList}>
-                                {messages.map((msg, idx) => {
+                                {messages.map((msg) => {
                                     const isSelf = msg.sender.id === user.id;
                                     const isReceiver = !isSelf;
                                     

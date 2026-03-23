@@ -4,7 +4,6 @@ import { X, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { BASE_URL, sendOffer, deleteListing, initiateConversation } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
-import styles from '../app/my-listings/page.module.css'; // Reuse some modal styles
 import DeleteModal from './DeleteModal';
 import ListingModal from './ListingModal';
 
@@ -68,8 +67,9 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                 setSuccess('');
                 setOfferAmount('');
             }, 2000);
-        } catch (err: any) {
-            setError(err.message || 'Failed to send offer');
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            setError(error.message || 'Failed to send offer');
         } finally {
             setIsSending(false);
         }
@@ -359,8 +359,9 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                                 });
                                                 onClose();
                                                 router.push(`/messages?conversationId=${conv.id}`);
-                                            } catch (err: any) {
-                                                setError(err.message || 'Failed to start conversation');
+                                            } catch (err: unknown) {
+                                                const error = err as { message?: string };
+                                                setError(error.message || 'Failed to start conversation');
                                             } finally {
                                                 setIsSending(false);
                                             }

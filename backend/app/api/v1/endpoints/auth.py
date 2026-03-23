@@ -1,5 +1,5 @@
 from datetime import timedelta
-from typing import Annotated, Any, Optional
+from typing import Annotated, Any
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 

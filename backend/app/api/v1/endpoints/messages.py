@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime, timezone
@@ -139,7 +139,7 @@ async def get_unread_total(current_user: User = Depends(deps.get_current_user)):
     
     return {"total": total_unread}
 
-@router.get("/offers/pending", response_model=List[PendingOfferOut])
+@router.get("/pending-bids", response_model=List[PendingOfferOut])
 async def get_pending_offers(current_user: User = Depends(deps.get_current_user)):
     """Get all pending offers for the current user's listings."""
     conversations = await Conversation.find(Conversation.seller.id == current_user.id).to_list()

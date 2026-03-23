@@ -16,7 +16,7 @@ interface ProductCardProps {
     onClick?: () => void;
 }
 
-export default function ProductCard({ id, title, description, price, images, image, seller, sellerId, sellerEmail, timeAgo, category, onClick }: ProductCardProps) {
+export default function ProductCard({ title, description, price, images, image, seller, timeAgo, category, onClick }: ProductCardProps) {
     const displayImage = (images && images.length > 0) ? images[0] : image;
     const imageUrl = displayImage ? (displayImage.startsWith('http') ? displayImage : `${BASE_URL}${displayImage}`) : null;
 

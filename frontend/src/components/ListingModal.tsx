@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Loader2, Plus, Trash2 } from 'lucide-react';
+import { X, Loader2, Plus, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import { createListing, updateListing, uploadListingImage, deleteListingImage, BASE_URL } from '../utils/api';
 
@@ -83,8 +83,9 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
             setLoading(true);
             await deleteListingImage(initialListing.id, imageUrl);
             setExistingImages(prev => prev.filter(url => url !== imageUrl));
-        } catch (err: any) {
-            setError(err.message || 'Failed to delete image');
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            setError(error.message || 'Failed to delete image');
         } finally {
             setLoading(false);
         }
