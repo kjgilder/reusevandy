@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNav from '../../components/BottomNav';
 import { Search, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer } from '../../utils/api';
+import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer, confirmTransaction, cancelListing } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import styles from './page.module.css';
 
@@ -20,10 +20,14 @@ interface Conversation {
         id: string;
         title: string;
         price: number;
+        status: string;
+        seller_confirmed_sold: boolean;
+        buyer_confirmed_sold: boolean;
     };
     buyer: UserParticipant;
     seller: UserParticipant;
     last_message_at: string;
+    unread_count?: number;
 }
 
 interface Message {
@@ -47,20 +51,44 @@ export default function MessagesPage() {
     const [isOfferMode, setIsOfferMode] = useState(false);
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [loadingMessages, setLoadingMessages] = useState(false);
+    const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
+    const [transacting, setTransacting] = useState(false);
+    
+    // Filters
+    const [role, setRole] = useState<'buying' | 'selling' | undefined>(undefined);
+    const [filter, setFilter] = useState<'active' | 'past'>('active');
+    const [searchQuery, setSearchQuery] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (loading) return; // Wait for the auth check to finish
+        const timer = setTimeout(() => {
+            setDebouncedSearch(searchQuery);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [searchQuery]);
+
+    useEffect(() => {
+        if (loading) return; 
         if (!user) {
             router.push('/login');
             return;
         }
         
         const fetchConvos = async () => {
+            if (!user) return;
             try {
-                const data = await getConversations();
+                const data = await getConversations({ role, search: debouncedSearch, filter });
                 setConversations(data);
+                
+                // If we have an active conversation, update its unread count to 0 locally
+                if (activeConversation) {
+                    setConversations(prev => prev.map(c => 
+                        c.id === activeConversation.id ? { ...c, unread_count: 0 } : c
+                    ));
+                }
+
                 if (data.length > 0 && !activeConversation) {
                     const urlParams = new URLSearchParams(window.location.search);
                     const targetConvId = urlParams.get('conversationId');
@@ -80,10 +108,9 @@ export default function MessagesPage() {
 
         fetchConvos();
         
-        // Polling for new conversations (every 10 seconds)
-        const intervalId = setInterval(fetchConvos, 10000);
+        const intervalId = setInterval(fetchConvos, 30000); // Polling every 30s
         return () => clearInterval(intervalId);
-    }, [user, router]); // Intentionally omitting activeConversation to prevent resetting it
+    }, [user, router, activeConversation?.id, role, debouncedSearch, filter]);
 
     useEffect(() => {
         if (!activeConversation) return;
@@ -95,13 +122,14 @@ export default function MessagesPage() {
                 scrollToBottom();
             } catch (err) {
                 console.error("Failed to fetch messages", err);
+            } finally {
+                setLoadingMessages(false);
             }
         };
 
-        fetchChat();
         setLoadingMessages(true);
+        fetchChat();
 
-        // Polling for active chat messages
         const intervalId = setInterval(fetchChat, 3000);
         return () => clearInterval(intervalId);
     }, [activeConversation]);
@@ -131,13 +159,11 @@ export default function MessagesPage() {
             } else {
                 await sendMessage(activeConversation.id, tempInput);
             }
-            // Re-fetch chat immediately
             const chatData = await getMessages(activeConversation.id);
             setMessages(chatData.messages);
             scrollToBottom();
         } catch (err) {
             console.error("Failed to send message", err);
-            // Revert input field on failure
             setMessageInput(tempInput);
         }
     };
@@ -145,14 +171,57 @@ export default function MessagesPage() {
     const handleUpdateOffer = async (messageId: string, status: 'accepted' | 'declined') => {
         try {
             await updateOfferStatus(messageId, status);
-            // Re-fetch chat immediately to show updated status
             if (activeConversation) {
                  const chatData = await getMessages(activeConversation.id);
                  setMessages(chatData.messages);
             }
-        } catch (err) {
+            // Refresh conversations to update listing status in sidebar
+            const data = await getConversations({ role, search: debouncedSearch, filter });
+            setConversations(data);
+        } catch (err: any) {
             console.error("Failed to update offer status", err);
-            alert("Errors updating offer. Make sure you are the seller.");
+            alert(err.message || "Errors updating offer. Make sure you are the seller.");
+        }
+    };
+
+    const handleCompleteTransaction = async () => {
+        if (!activeConversation) return;
+        setTransacting(true);
+        setTransactionStatus(null);
+        try {
+            await confirmTransaction(activeConversation.listing.id);
+            setTransactionStatus('completed');
+            // Refresh conversations and update the active one
+            const data = await getConversations({ role, search: debouncedSearch, filter });
+            setConversations(data);
+            // Update the active conversation's listing status in local state
+            const updated = data.find((c: Conversation) => c.id === activeConversation.id);
+            if (updated) setActiveConversation(updated);
+        } catch (err: any) {
+            console.error("Failed to complete transaction", err);
+            setTransactionStatus('error:' + (err.message || 'Failed to confirm transaction'));
+        } finally {
+            setTransacting(false);
+        }
+    };
+
+    const handleCancelTransaction = async () => {
+        if (!activeConversation) return;
+        setTransacting(true);
+        setTransactionStatus(null);
+        try {
+            await cancelListing(activeConversation.listing.id);
+            setTransactionStatus('cancelled');
+            // Refresh
+            const data = await getConversations({ role, search: debouncedSearch, filter });
+            setConversations(data);
+            const updated = data.find((c: Conversation) => c.id === activeConversation.id);
+            if (updated) setActiveConversation(updated);
+        } catch (err: any) {
+            console.error("Failed to cancel transaction", err);
+            setTransactionStatus('error:' + (err.message || 'Failed to cancel transaction'));
+        } finally {
+            setTransacting(false);
         }
     };
 
@@ -167,18 +236,52 @@ export default function MessagesPage() {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
-    if (!user) return null; // Wait for redirect
+    if (!user) return null;
 
     return (
         <div className={styles.pageContainer}>
             <main className={styles.messagesMain}>
-                {/* Left Sidebar */}
                 <div className={styles.sidebar}>
                     <div className={styles.sidebarHeader}>
                         <h1>Messages</h1>
+                        <div className={styles.filterTabs}>
+                            <button 
+                                className={`${styles.filterTab} ${!role ? styles.activeTab : ''}`}
+                                onClick={() => setRole(undefined)}
+                            >
+                                All
+                            </button>
+                            <button 
+                                className={`${styles.filterTab} ${role === 'buying' ? styles.activeTab : ''}`}
+                                onClick={() => setRole('buying')}
+                            >
+                                Buying
+                            </button>
+                            <button 
+                                className={`${styles.filterTab} ${role === 'selling' ? styles.activeTab : ''}`}
+                                onClick={() => setRole('selling')}
+                            >
+                                Selling
+                            </button>
+                            <button 
+                                className={`${styles.filterTab} ${filter === 'past' ? styles.activeTab : ''}`}
+                                onClick={() => {
+                                    setFilter(filter === 'past' ? 'active' : 'past');
+                                    setRole(undefined); // Clear role when switching to past for better view
+                                }}
+                            >
+                                {filter === 'past' ? 'Active Chat' : 'Past'}
+                            </button>
+                        </div>
                         <div className={styles.searchContainer}>
                             <Search size={16} color="#9ca3af" style={{ position: 'absolute', left: '12px', top: '12px' }} />
-                            <input type="text" placeholder="Search conversations..." className={styles.searchInput} />
+                            <input 
+                                type="text" 
+                                placeholder="Search by name, item or content..." 
+                                className={styles.searchInput} 
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
                         </div>
                     </div>
                     
@@ -189,40 +292,63 @@ export default function MessagesPage() {
                             </div>
                         ) : conversations.length === 0 ? (
                             <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: '14px' }}>
-                                No conversations yet
+                                {searchQuery || role ? 'No matches found' : 'No conversations yet'}
                             </div>
                         ) : (
-                            conversations.map(conv => {
-                                const isUserBuyer = conv.buyer.id === user.id;
-                                const otherParticipant = isUserBuyer ? conv.seller : conv.buyer;
-                                const participantName = otherParticipant.full_name || otherParticipant.email || 'Unknown';
-                                
-                                return (
-                                    <div 
-                                        key={conv.id} 
-                                        className={`${styles.conversationItem} ${activeConversation?.id === conv.id ? styles.active : ''}`}
-                                        onClick={() => setActiveConversation(conv)}
-                                    >
-                                        <div className={styles.avatar}>
-                                            {getInitials(otherParticipant.full_name, otherParticipant.email)}
+                            (() => {
+                                // Group by listing
+                                const grouped: Record<string, { listing: any, convs: Conversation[] }> = {};
+                                conversations.forEach(conv => {
+                                    const lid = conv.listing.id;
+                                    if (!grouped[lid]) {
+                                        grouped[lid] = { listing: conv.listing, convs: [] };
+                                    }
+                                    grouped[lid].convs.push(conv);
+                                });
+
+                                return Object.values(grouped).map(group => (
+                                    <div key={group.listing.id} className={styles.listingGroup}>
+                                        <div className={styles.listingGroupHeader}>
+                                            {group.listing.title} <span>${group.listing.price}</span>
                                         </div>
-                                        <div className={styles.conversationDetails}>
-                                            <div className={styles.conversationHeader}>
-                                                <h3 className={styles.participantName}>{participantName}</h3>
-                                            </div>
-                                            <p className={styles.listingInfo}>
-                                                {conv.listing.title} • ${conv.listing.price}
-                                            </p>
-                                            <p className={styles.lastMessage}>View discussion</p>
-                                        </div>
+                                        {group.convs.map(conv => {
+                                            const isUserBuyer = conv.buyer.id === user.id;
+                                            const otherParticipant = isUserBuyer ? conv.seller : conv.buyer;
+                                            const participantName = otherParticipant.full_name || otherParticipant.email || 'Unknown';
+                                            const isUnread = (conv.unread_count || 0) > 0;
+                                            
+                                            return (
+                                                <div 
+                                                    key={conv.id} 
+                                                    className={`${styles.conversationItem} ${activeConversation?.id === conv.id ? styles.active : ''}`}
+                                                    onClick={() => setActiveConversation(conv)}
+                                                >
+                                                    <div className={styles.avatar}>
+                                                        {getInitials(otherParticipant.full_name, otherParticipant.email)}
+                                                    </div>
+                                                    <div className={styles.conversationDetails}>
+                                                        <div className={styles.conversationHeader}>
+                                                            <h3 className={styles.participantName} style={{ fontWeight: isUnread ? '800' : '600' }}>
+                                                                {participantName}
+                                                            </h3>
+                                                            {isUnread && (
+                                                                <div className={styles.unreadDot} />
+                                                            )}
+                                                        </div>
+                                                        <p className={styles.lastMessage} style={{ fontWeight: isUnread ? '700' : '400', color: isUnread ? 'var(--vandy-gold)' : '#9ca3af' }}>
+                                                            {isUnread ? 'New message' : 'View thread'}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
-                                );
-                            })
+                                ));
+                            })()
                         )}
                     </div>
                 </div>
 
-                {/* Right Chat Area */}
                 <div className={styles.chatArea}>
                     {activeConversation ? (
                         <>
@@ -238,15 +364,113 @@ export default function MessagesPage() {
                                                 {getInitials(otherParticipant.full_name, otherParticipant.email)}
                                             </div>
                                             <div>
-                                                <h2 className={styles.participantName} style={{ fontSize: '16px' }}>{participantName}</h2>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <h2 className={styles.participantName} style={{ fontSize: '16px' }}>{participantName}</h2>
+                                                    {activeConversation.listing.status === 'pending' && (
+                                                        <span className={`${styles.statusBadge} ${styles.statusPending}`}>Pending Sale</span>
+                                                    )}
+                                                    {activeConversation.listing.status === 'sold' && (
+                                                        <span className={`${styles.statusBadge} ${styles.statusSold}`}>Sold</span>
+                                                    )}
+                                                </div>
                                                 <p className={styles.listingInfo} style={{ color: '#6b7280' }}>
                                                     {activeConversation.listing.title} • ${activeConversation.listing.price}
                                                 </p>
                                             </div>
+                                            
+                                            {activeConversation.listing.status === 'pending' && (() => {
+                                                const sellerConfirmed = activeConversation.listing.seller_confirmed_sold;
+                                                const buyerConfirmed = activeConversation.listing.buyer_confirmed_sold;
+                                                const isSeller = activeConversation.seller.id === user.id;
+                                                const isBuyer = activeConversation.buyer.id === user.id;
+                                                
+                                                // Waiting state: seller has confirmed, waiting for buyer
+                                                if (sellerConfirmed && !buyerConfirmed) {
+                                                    return (
+                                                        <div className={styles.transactionActions}>
+                                                            {isBuyer ? (
+                                                                <button
+                                                                    className={`${styles.transactionBtn} ${styles.completeBtn}`}
+                                                                    onClick={handleCompleteTransaction}
+                                                                    disabled={transacting}
+                                                                >
+                                                                    {transacting ? '...' : 'Confirm Receipt'}
+                                                                </button>
+                                                            ) : (
+                                                                <span style={{ fontSize: '13px', color: '#d97706', fontWeight: '600', background: '#fef3c7', padding: '8px 14px', borderRadius: '8px' }}>
+                                                                    ⏳ Waiting for buyer to confirm receipt
+                                                                </span>
+                                                            )}
+                                                            {isSeller && (
+                                                                <button
+                                                                    className={`${styles.transactionBtn} ${styles.cancelBtn}`}
+                                                                    onClick={handleCancelTransaction}
+                                                                    disabled={transacting}
+                                                                    style={{ marginLeft: '8px' }}
+                                                                >
+                                                                    {transacting ? '...' : 'Cancel'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                }
+
+                                                // Default: show action buttons
+                                                return (
+                                                    <div className={styles.transactionActions}>
+                                                        {isSeller ? (
+                                                            <>
+                                                                <button
+                                                                    className={`${styles.transactionBtn} ${styles.completeBtn}`}
+                                                                    onClick={handleCompleteTransaction}
+                                                                    disabled={transacting}
+                                                                >
+                                                                    {transacting ? '...' : 'Complete Transaction'}
+                                                                </button>
+                                                                <button
+                                                                    className={`${styles.transactionBtn} ${styles.cancelBtn}`}
+                                                                    onClick={handleCancelTransaction}
+                                                                    disabled={transacting}
+                                                                >
+                                                                    {transacting ? '...' : 'Cancel'}
+                                                                </button>
+                                                            </>
+                                                        ) : isBuyer ? (
+                                                            <span style={{ fontSize: '13px', color: '#6b7280', fontWeight: '600', background: '#f3f4f6', padding: '8px 14px', borderRadius: '8px' }}>
+                                                                Offer accepted — awaiting seller confirmation
+                                                            </span>
+                                                        ) : null}
+                                                    </div>
+                                                );
+                                            })()}
                                         </>
                                     );
                                 })()}
                             </div>
+
+                            {/* Transaction status banner */}
+                            {transactionStatus && (
+                                <div style={{
+                                    padding: '10px 24px',
+                                    backgroundColor: transactionStatus.startsWith('error:') ? '#fef2f2' : transactionStatus === 'cancelled' ? '#fffbeb' : '#f0fdf4',
+                                    borderBottom: '1px solid #e5e7eb',
+                                    fontSize: '13px',
+                                    fontWeight: '600',
+                                    color: transactionStatus.startsWith('error:') ? '#dc2626' : transactionStatus === 'cancelled' ? '#d97706' : '#16a34a',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <span>
+                                        {transactionStatus.startsWith('error:') 
+                                            ? `⚠️ ${transactionStatus.replace('error:', '')}`
+                                            : transactionStatus === 'cancelled'
+                                            ? '✅ Offer cancelled — listing is back on the market'
+                                            : '✅ Transaction confirmed — listing marked as sold'}
+                                    </span>
+                                    <button onClick={() => setTransactionStatus(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                                </div>
+                            )}
 
                             <div className={styles.messageList}>
                                 {messages.map((msg, idx) => {
@@ -341,6 +565,15 @@ export default function MessagesPage() {
                 </div>
             </main>
             <BottomNav />
+            <style jsx>{`
+                @keyframes spin {
+                    from { transform: rotate(0deg); }
+                    to { transform: rotate(360deg); }
+                }
+                .animate-spin {
+                    animation: spin 1s linear infinite;
+                }
+            `}</style>
         </div>
     );
 }

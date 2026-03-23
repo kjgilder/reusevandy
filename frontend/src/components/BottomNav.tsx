@@ -1,11 +1,34 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Home, MessageSquare, User } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import { getUnreadTotal } from '../utils/api';
 
 export default function BottomNav() {
     const pathname = usePathname();
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        const fetchUnread = async () => {
+            try {
+                const data = await getUnreadTotal();
+                setUnreadCount(data.total);
+                
+                // Also trigger a custom event that other components can listen to
+                // this is useful if we want to sync unread counts across the app
+                window.dispatchEvent(new CustomEvent('unreadCountUpdate', { detail: data.total }));
+            } catch (err) {
+                console.error('Failed to fetch unread count:', err);
+            }
+        };
+
+        fetchUnread();
+        // Refresh every 30 seconds
+        const interval = setInterval(fetchUnread, 30000);
+        return () => clearInterval(interval);
+    }, [pathname]); // Refresh when path changes (User might have read messages)
 
     const getLinkStyle = (path: string) => {
         const isActive = pathname === path;
@@ -16,6 +39,7 @@ export default function BottomNav() {
             gap: '4px',
             textDecoration: 'none',
             color: isActive ? 'var(--vandy-gold)' : 'var(--vandy-grey)',
+            position: 'relative' as const
         };
     };
 
@@ -45,7 +69,30 @@ export default function BottomNav() {
                 <span style={getTextStyle('/home')}>Browse</span>
             </Link>
             <Link href="/messages" style={getLinkStyle('/messages')}>
-                <MessageSquare size={24} />
+                <div style={{ position: 'relative' }}>
+                    <MessageSquare size={24} />
+                    {unreadCount > 0 && (
+                        <div style={{
+                            position: 'absolute',
+                            top: '-5px',
+                            right: '-8px',
+                            backgroundColor: '#ef4444',
+                            color: 'white',
+                            fontSize: '10px',
+                            fontWeight: 'bold',
+                            borderRadius: '50%',
+                            width: '18px', // Slightly larger for better visibility
+                            height: '18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            border: '2px solid white',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}>
+                            {unreadCount > 9 ? '9+' : unreadCount}
+                        </div>
+                    )}
+                </div>
                 <span style={getTextStyle('/messages')}>Messages</span>
             </Link>
             <Link href="/my-listings" style={getLinkStyle('/my-listings')}>

@@ -31,6 +31,8 @@ class ListingOut(ListingBase):
     id: UUID
     seller: UserOut
     status: ListingStatus
+    seller_confirmed_sold: bool = False
+    buyer_confirmed_sold: bool = False
     views: int
     message_count: int
     created_at: datetime

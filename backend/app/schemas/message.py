@@ -17,6 +17,7 @@ class MessageCreate(MessageBase):
 class MessageOut(MessageBase):
     id: UUID
     sender: UserOut
+    is_read: bool = False
     created_at: datetime
     
     model_config = ConfigDict(from_attributes=True)
@@ -27,6 +28,7 @@ class ConversationOut(BaseModel):
     buyer: UserOut
     seller: UserOut
     last_message_at: datetime
+    unread_count: int = 0
     
     model_config = ConfigDict(from_attributes=True)
 

@@ -10,3 +10,7 @@ frontend/out/
 backend/fix_image.py
 backend/fix_image_direct.py
 backend/backend.log
+.env
+backend/.env
+frontend/.env
+**/ .env

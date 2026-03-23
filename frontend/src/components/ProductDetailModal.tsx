@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
-import { X, Edit, Trash2 } from 'lucide-react';
+import { X, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { BASE_URL, sendOffer, deleteListing, initiateConversation } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
@@ -17,6 +17,7 @@ interface ProductDetailModalProps {
         description: string;
         price: number;
         category: string;
+        images?: string[];
         image?: string;
         seller?: {
             id?: string;
@@ -35,13 +36,14 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
     const [isSending, setIsSending] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
 
     if (!isOpen || !listing) return null;
 
-    const imageUrl = listing.image ? (listing.image.startsWith('http') ? listing.image : `${BASE_URL}${listing.image}`) : null;
+    const images = listing.images || (listing.image ? [listing.image] : []);
     const isOwner = user && listing.seller && (user.id === listing.seller.id || user.email === listing.seller.email);
 
     const handleSendOffer = async () => {
@@ -85,6 +87,14 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
         }
     };
 
+    const nextImage = () => {
+        setCurrentImageIndex((prev) => (prev + 1) % images.length);
+    };
+
+    const prevImage = () => {
+        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    };
+
     return (
         <div style={{
             position: 'fixed',
@@ -94,19 +104,21 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
-            padding: '20px'
+            padding: '20px',
+            backdropFilter: 'blur(4px)'
         }}>
             <div style={{
                 backgroundColor: 'var(--vandy-cream)',
-                borderRadius: '16px',
+                borderRadius: '20px',
                 width: '100%',
-                maxWidth: '500px',
+                maxWidth: '550px',
                 maxHeight: '90vh',
                 overflowY: 'auto',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
                 position: 'relative',
                 display: 'flex',
-                flexDirection: 'column'
+                flexDirection: 'column',
+                border: '1px solid rgba(139, 125, 91, 0.2)'
             }}>
                 <button
                     onClick={onClose}
@@ -114,24 +126,75 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                         position: 'absolute',
                         top: '16px',
                         right: '16px',
-                        backgroundColor: 'rgba(255,255,255,0.8)',
+                        backgroundColor: 'rgba(255,255,255,0.9)',
                         border: 'none',
                         borderRadius: '50%',
                         padding: '8px',
                         cursor: 'pointer',
-                        zIndex: 10,
+                        zIndex: 20,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        color: 'var(--vandy-black)'
                     }}
                 >
-                    <X size={20} color="var(--vandy-black)" />
+                    <X size={20} />
                 </button>
 
-                <div style={{ height: '300px', width: '100%', position: 'relative', backgroundColor: '#e5e7eb' }}>
-                    {imageUrl ? (
-                        <Image src={imageUrl} alt={listing.title} fill style={{ objectFit: 'cover' }} />
+                {/* Carousel Container */}
+                <div style={{ height: '350px', width: '100%', position: 'relative', backgroundColor: '#1a1a1a', overflow: 'hidden' }}>
+                    {images.length > 0 ? (
+                        <>
+                            <Image 
+                                src={images[currentImageIndex].startsWith('http') ? images[currentImageIndex] : `${BASE_URL}${images[currentImageIndex]}`} 
+                                alt={`${listing.title} - ${currentImageIndex + 1}`} 
+                                fill 
+                                style={{ objectFit: 'cover' }} 
+                            />
+                            
+                            {images.length > 1 && (
+                                <>
+                                    <button 
+                                        onClick={prevImage}
+                                        style={{
+                                            position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)',
+                                            backgroundColor: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%',
+                                            padding: '8px', cursor: 'pointer', zIndex: 10, display: 'flex'
+                                        }}
+                                    >
+                                        <ChevronLeft size={24} color="var(--vandy-black)" />
+                                    </button>
+                                    <button 
+                                        onClick={nextImage}
+                                        style={{
+                                            position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)',
+                                            backgroundColor: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%',
+                                            padding: '8px', cursor: 'pointer', zIndex: 10, display: 'flex'
+                                        }}
+                                    >
+                                        <ChevronRight size={24} color="var(--vandy-black)" />
+                                    </button>
+                                    
+                                    {/* Pagination Dots */}
+                                    <div style={{
+                                        position: 'absolute', bottom: '16px', left: '50%', transform: 'translateX(-50%)',
+                                        display: 'flex', gap: '8px', zIndex: 10
+                                    }}>
+                                        {images.map((_, i) => (
+                                            <div 
+                                                key={i} 
+                                                style={{
+                                                    width: '8px', height: '8px', borderRadius: '50%',
+                                                    backgroundColor: i === currentImageIndex ? 'var(--vandy-gold)' : 'rgba(255,255,255,0.5)',
+                                                    transition: 'all 0.3s'
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </>
                     ) : (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--vandy-grey)' }}>
                             No Image Available
@@ -139,84 +202,91 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                     )}
                 </div>
 
-                <div style={{ padding: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
+                <div style={{ padding: '28px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
                         <div>
                             <span style={{
                                 backgroundColor: 'var(--vandy-black)',
-                                color: 'white',
-                                padding: '4px 12px',
-                                borderRadius: '16px',
+                                color: 'var(--vandy-gold)',
+                                padding: '4px 14px',
+                                borderRadius: '20px',
                                 fontSize: '11px',
-                                fontWeight: '700',
+                                fontWeight: '800',
                                 textTransform: 'uppercase',
-                                letterSpacing: '0.05em',
+                                letterSpacing: '0.1em',
                                 display: 'inline-block',
-                                marginBottom: '12px'
+                                marginBottom: '16px',
+                                boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                             }}>{listing.category}</span>
-                            <h2 style={{ margin: '0 0 4px 0', fontSize: '24px', fontFamily: 'Outfit, sans-serif' }}>{listing.title}</h2>
-                            <p style={{ margin: 0, color: 'var(--vandy-grey)', fontSize: '14px' }}>{listing.description}</p>
+                            <h2 style={{ margin: '0 0 8px 0', fontSize: '28px', fontFamily: 'Outfit, sans-serif', fontWeight: '800' }}>{listing.title}</h2>
+                            <p style={{ margin: 0, color: '#4b5563', fontSize: '15px', lineHeight: '1.6' }}>{listing.description}</p>
                         </div>
-                        <div style={{ fontSize: '28px', fontWeight: '800', color: 'var(--vandy-gold)', marginLeft: '16px' }}>
+                        <div style={{ fontSize: '32px', fontWeight: '900', color: 'var(--vandy-gold)', marginLeft: '16px', textShadow: '0 2px 4px rgba(0,0,0,0.05)' }}>
                             ${listing.price}
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--vandy-grey)', fontSize: '13px', marginTop: '16px', paddingBottom: '24px', borderBottom: '1px solid #e5e7eb' }}>
-                        <span>Seller: <strong>{listing.seller?.full_name || listing.seller?.email || 'Unknown'}</strong></span>
-                        <span>Listed: {listing.timeAgo}</span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6b7280', fontSize: '14px', marginTop: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                        <span>Seller: <strong style={{ color: 'var(--vandy-black)' }}>{listing.seller?.full_name || listing.seller?.email || 'Unknown'}</strong></span>
+                        <span>Listed {listing.timeAgo}</span>
                     </div>
 
                     {/* Actions Panel */}
-                    <div style={{ marginTop: '24px' }}>
+                    <div style={{ marginTop: '28px' }}>
                         {isOwner ? (
-                            <div style={{ display: 'flex', gap: '12px' }}>
+                            <div style={{ display: 'flex', gap: '16px' }}>
                                 <button
                                     onClick={() => setShowEditModal(true)}
                                     style={{
-                                        flex: 1,
-                                        padding: '12px',
+                                        flex: 2,
+                                        padding: '14px',
                                         backgroundColor: 'white',
-                                        border: '1px solid #e5e7eb',
-                                        borderRadius: '8px',
-                                        fontWeight: '600',
+                                        border: '2px solid var(--vandy-gold)',
+                                        borderRadius: '12px',
+                                        fontWeight: '700',
                                         color: 'var(--vandy-black)',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        gap: '8px'
+                                        gap: '10px',
+                                        transition: 'all 0.2s'
                                     }}
+                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = 'rgba(139, 125, 91, 0.05)'}
+                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = 'white'}
                                 >
-                                    <Edit size={16} /> Edit Listing
+                                    <Edit size={18} /> Edit Listing
                                 </button>
                                 <button
                                     onClick={() => setShowDeleteConfirm(true)}
                                     style={{
                                         flex: 1,
-                                        padding: '12px',
+                                        padding: '14px',
                                         backgroundColor: '#fee2e2',
-                                        border: '1px solid #fca5a5',
-                                        borderRadius: '8px',
-                                        fontWeight: '600',
+                                        border: 'none',
+                                        borderRadius: '12px',
+                                        fontWeight: '700',
                                         color: '#ef4444',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         justifyContent: 'center',
                                         alignItems: 'center',
-                                        gap: '8px'
+                                        gap: '8px',
+                                        transition: 'all 0.2s'
                                     }}
+                                    onMouseEnter={e => e.currentTarget.style.backgroundColor = '#fecaca'}
+                                    onMouseLeave={e => e.currentTarget.style.backgroundColor = '#fee2e2'}
                                 >
-                                    <Trash2 size={16} /> Delete
+                                    <Trash2 size={18} /> Delete
                                 </button>
                             </div>
                         ) : (
                             <div>
                                 <div>
-                                    <h3 style={{ fontSize: '14px', fontWeight: '600', margin: '0 0 12px 0' }}>Make an Offer</h3>
+                                    <h3 style={{ fontSize: '15px', fontWeight: '700', margin: '0 0 16px 0', color: 'var(--vandy-black)' }}>Make an Offer</h3>
                                     <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                                         <div style={{ position: 'relative', flex: 1 }}>
-                                            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontWeight: 'bold' }}>$</span>
+                                            <span style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', fontWeight: '800', color: '#111827' }}>$</span>
                                             <input
                                                 type="number"
                                                 value={offerAmount}
@@ -224,14 +294,17 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                                 placeholder={listing.price.toString()}
                                                 style={{
                                                     width: '100%',
-                                                    padding: '12px 12px 12px 28px',
-                                                    borderRadius: '8px',
-                                                    border: '1px solid #e5e7eb',
-                                                    fontSize: '16px',
-                                                    fontWeight: '600',
+                                                    padding: '14px 16px 14px 32px',
+                                                    borderRadius: '12px',
+                                                    border: '1px solid #d1d5db',
+                                                    fontSize: '18px',
+                                                    fontWeight: '700',
                                                     outline: 'none',
-                                                    boxSizing: 'border-box'
+                                                    boxSizing: 'border-box',
+                                                    transition: 'border-color 0.2s'
                                                 }}
+                                                onFocus={e => e.currentTarget.style.borderColor = 'var(--vandy-gold)'}
+                                                onBlur={e => e.currentTarget.style.borderColor = '#d1d5db'}
                                             />
                                         </div>
                                         <button
@@ -245,17 +318,20 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                             }}
                                             disabled={isSending}
                                             style={{
-                                                padding: '12px 24px',
+                                                padding: '14px 28px',
                                                 backgroundColor: 'var(--vandy-gold)',
                                                 color: 'var(--vandy-black)',
                                                 border: 'none',
-                                                borderRadius: '8px',
-                                                fontWeight: '700',
-                                                fontSize: '15px',
+                                                borderRadius: '12px',
+                                                fontWeight: '800',
+                                                fontSize: '16px',
                                                 cursor: isSending ? 'not-allowed' : 'pointer',
-                                                opacity: isSending ? 0.5 : 1,
-                                                minWidth: '130px'
+                                                opacity: isSending ? 0.6 : 1,
+                                                boxShadow: '0 4px 6px -1px rgba(139, 125, 91, 0.3)',
+                                                transition: 'all 0.2s'
                                             }}
+                                            onMouseEnter={e => !isSending && (e.currentTarget.style.transform = 'translateY(-1px)')}
+                                            onMouseLeave={e => !isSending && (e.currentTarget.style.transform = 'translateY(0)')}
                                         >
                                             {isSending ? 'Sending...' : 'Send Offer'}
                                         </button>
@@ -267,12 +343,12 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                             onClick={handleSendOffer}
                                         />
                                     </div>
-                                    <p style={{ margin: '8px 0 0 0', fontSize: '12px', color: 'var(--vandy-grey)' }}>
+                                    <p style={{ margin: '12px 0 0 0', fontSize: '13px', color: '#6b7280', textAlign: 'center' }}>
                                         Tip: You can negotiate below the asking price
                                     </p>
                                 </div>
 
-                                <div style={{ borderTop: '1px solid #e5e7eb', marginTop: '20px', paddingTop: '20px' }}>
+                                <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)', marginTop: '24px', paddingTop: '24px', display: 'flex', justifyContent: 'center' }}>
                                     <button
                                         onClick={async () => {
                                             try {
@@ -291,26 +367,25 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                         }}
                                         disabled={isSending}
                                         style={{
-                                            width: '100%',
-                                            padding: '12px',
-                                            backgroundColor: 'white',
-                                            color: 'var(--vandy-black)',
-                                            border: '1px solid #e5e7eb',
+                                            padding: '10px 20px',
+                                            backgroundColor: 'transparent',
+                                            color: '#6b7280',
+                                            border: 'none',
                                             borderRadius: '8px',
                                             fontWeight: '600',
-                                            fontSize: '15px',
+                                            fontSize: '14px',
                                             cursor: isSending ? 'not-allowed' : 'pointer',
                                             opacity: isSending ? 0.5 : 1,
-                                            boxSizing: 'border-box'
+                                            textDecoration: 'underline'
                                         }}
                                     >
-                                        Direct Message
+                                        Ask a question
                                     </button>
                                 </div>
 
 
-                                {error && <p style={{ color: 'red', fontSize: '13px', marginTop: '12px' }}>{error}</p>}
-                                {success && <p style={{ color: 'green', fontSize: '13px', marginTop: '12px', fontWeight: '600' }}>{success}</p>}
+                                {error && <p style={{ color: '#ef4444', fontSize: '14px', marginTop: '16px', textAlign: 'center', fontWeight: '600' }}>{error}</p>}
+                                {success && <p style={{ color: '#10b981', fontSize: '14px', marginTop: '16px', textAlign: 'center', fontWeight: '700' }}>{success}</p>}
                             </div>
                         )}
                     </div>

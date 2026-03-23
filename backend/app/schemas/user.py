@@ -6,6 +6,7 @@ from uuid import UUID
 class UserBase(BaseModel):
     email: EmailStr
     full_name: Optional[str] = None
+    profile_picture: Optional[str] = None
     is_active: bool = True
     is_superuser: bool = False
 
@@ -24,6 +25,9 @@ class UserCreate(UserBase):
 class UserUpdate(UserBase):
     password: Optional[str] = None
 
+class UserUpdateInfo(BaseModel):
+    full_name: Optional[str] = None
+    profile_picture: Optional[str] = None
 
 class UserOut(UserBase):
     id: UUID

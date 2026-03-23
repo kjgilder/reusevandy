@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 from enum import Enum
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from beanie import Document, Link
 from pydantic import Field
@@ -18,9 +18,10 @@ class Category(str, Enum):
 
 
 class ListingStatus(str, Enum):
-    AVAILABLE = "available"
+    ACTIVE = "active"
     PENDING = "pending"
     SOLD = "sold"
+    CANCELLED = "cancelled"
     HIDDEN = "hidden"
 
 
@@ -32,7 +33,10 @@ class Listing(Document):
     category: Category
     images: List[str] = []  # List of Vercel Blob URLs
     seller: Link[User]
-    status: ListingStatus = ListingStatus.AVAILABLE
+    buyer: Optional[Link[User]] = None
+    status: ListingStatus = ListingStatus.ACTIVE
+    seller_confirmed_sold: bool = False
+    buyer_confirmed_sold: bool = False
     views: int = 0
     message_count: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))

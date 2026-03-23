@@ -1,16 +1,30 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import Navbar from '../../components/Navbar';
 import BottomNav from '../../components/BottomNav';
 import MyListingCard from '../../components/MyListingCard';
 import DeleteModal from '../../components/DeleteModal';
 import ListingModal from '../../components/ListingModal';
-import { getMyListings, updateListingStatus, deleteListing, getPendingOffers, updateOfferStatus } from '../../utils/api';
+import { 
+    getMyListings, 
+    getPurchasedListings, 
+    updateListingStatus, 
+    deleteListing, 
+    getPendingOffers, 
+    updateOfferStatus,
+    uploadProfilePicture,
+    updateProfile,
+    confirmTransaction,
+    revertToActive,
+    cancelListing
+} from '../../utils/api';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import styles from './page.module.css';
 import { PendingOffer } from '../../components/MyListingCard';
+import { ChevronDown, ChevronUp, Package, ShoppingBag, Camera, LogOut } from 'lucide-react';
+import Image from 'next/image';
 
 interface Listing {
     id: string;
@@ -19,7 +33,9 @@ interface Listing {
     price: number;
     category: string;
     images: string[];
-    status: 'available' | 'sold' | 'hidden';
+    status: 'active' | 'sold' | 'hidden' | 'pending' | 'cancelled';
+    seller_confirmed_sold?: boolean;
+    buyer_confirmed_sold?: boolean;
     views: number;
     messageCount: number;
     created_at: string;
@@ -28,17 +44,22 @@ interface Listing {
 
 export default function MyListingsPage() {
     const router = useRouter();
-    const { user, loading: authLoading } = useAuth();
+    const { user, loading: authLoading, logout } = useAuth();
     const isAuthenticated = !!user;
     
     const [listings, setListings] = useState<Listing[]>([]);
+    const [purchasedListings, setPurchasedListings] = useState<Listing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     
-    const [activeTab, setActiveTab] = useState<'available' | 'sold' | 'hidden'>('available');
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [listingToDelete, setListingToDelete] = useState<string | null>(null);
     const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+    
+    const [isSoldExpanded, setIsSoldExpanded] = useState(false);
+    const [isPurchasedExpanded, setIsPurchasedExpanded] = useState(false);
+    
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -47,16 +68,17 @@ export default function MyListingsPage() {
         }
 
         if (isAuthenticated) {
-            fetchListings();
+            fetchData();
         }
     }, [isAuthenticated, authLoading, router]);
 
-    const fetchListings = async () => {
+    const fetchData = async () => {
         try {
             setIsLoading(true);
-            const [listingsData, offersData] = await Promise.all([
+            const [listingsData, offersData, purchasedData] = await Promise.all([
                 getMyListings(),
-                getPendingOffers()
+                getPendingOffers(),
+                getPurchasedListings()
             ]);
             
             // Map offers to listings
@@ -66,9 +88,10 @@ export default function MyListingsPage() {
             });
             
             setListings(listingsWithOffers);
+            setPurchasedListings(purchasedData);
         } catch (err) {
-            console.error('Failed to fetch listings or offers:', err);
-            setError('Failed to load your listings. Please try again later.');
+            console.error('Failed to fetch data:', err);
+            setError('Failed to load your information. Please try again later.');
         } finally {
             setIsLoading(false);
         }
@@ -77,8 +100,7 @@ export default function MyListingsPage() {
     const handleAcceptOffer = async (offerId: string, listingId: string) => {
         try {
             await updateOfferStatus(offerId, 'accepted');
-            // Optimistically update the UI to move the item to 'sold' and remove it from 'available'
-            setListings(listings.map(l => l.id === listingId ? { ...l, status: 'sold', pendingOffers: l.pendingOffers?.filter(o => o.id !== offerId) } : l));
+            await fetchData(); // Refresh all to update status and potentially sold items
         } catch (err) {
             console.error('Failed to accept offer:', err);
             alert('Failed to accept offer. Please try again.');
@@ -88,7 +110,6 @@ export default function MyListingsPage() {
     const handleDeclineOffer = async (offerId: string, listingId: string) => {
         try {
             await updateOfferStatus(offerId, 'declined');
-            // Optimistically update the UI to remove the offer from the listing
             setListings(listings.map(l => l.id === listingId ? { ...l, pendingOffers: l.pendingOffers?.filter(o => o.id !== offerId) } : l));
         } catch (err) {
             console.error('Failed to decline offer:', err);
@@ -97,12 +118,10 @@ export default function MyListingsPage() {
     };
 
     const handleToggleVisibility = async (id: string, currentStatus: string) => {
-        // We use currentStatus === 'sold' as a signal to undo the sold status and make it available.
-        const newStatus = (currentStatus === 'hidden' || currentStatus === 'sold') ? 'available' : 'hidden';
+        const newStatus = (currentStatus === 'hidden' || currentStatus === 'sold') ? 'active' : 'hidden';
         try {
             await updateListingStatus(id, newStatus);
-            // Optimistic update
-            setListings(listings.map(l => l.id === id ? { ...l, status: newStatus } : l));
+            setListings(listings.map(l => l.id === id ? { ...l, status: newStatus as any } : l));
         } catch (err) {
             console.error('Failed to update status:', err);
             alert('Failed to update listing status. Please try again.');
@@ -112,11 +131,30 @@ export default function MyListingsPage() {
     const handleMarkSold = async (id: string) => {
         try {
             await updateListingStatus(id, 'sold');
-            // Optimistic update
-            setListings(listings.map(l => l.id === id ? { ...l, status: 'sold' } : l));
+            await fetchData();
         } catch (err) {
             console.error('Failed to mark as sold:', err);
             alert('Failed to mark listing as sold. Please try again.');
+        }
+    };
+
+    const handleConfirmSold = async (id: string) => {
+        try {
+            await confirmTransaction(id);
+            await fetchData();
+        } catch (err) {
+            console.error('Failed to confirm sale:', err);
+            alert('Failed to confirm sale. Please try again.');
+        }
+    };
+
+    const handleRevertActive = async (id: string) => {
+        try {
+            await revertToActive(id);
+            await fetchData();
+        } catch (err) {
+            console.error('Failed to revert listing:', err);
+            alert('Failed to revert listing. Please try again.');
         }
     };
 
@@ -127,10 +165,8 @@ export default function MyListingsPage() {
 
     const confirmDelete = async () => {
         if (!listingToDelete) return;
-        
         try {
             await deleteListing(listingToDelete);
-            // Optimistic update
             setListings(listings.filter(l => l.id !== listingToDelete));
             setDeleteModalOpen(false);
             setListingToDelete(null);
@@ -140,79 +176,112 @@ export default function MyListingsPage() {
         }
     };
 
+    const handleAvatarClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        try {
+            await uploadProfilePicture(file);
+            window.location.reload(); // Quickest way to refresh AuthContext user
+        } catch (err) {
+            console.error('Failed to upload profile picture:', err);
+            alert('Failed to upload picture. Please try again.');
+        }
+    };
+
     const getTimeAgo = (dateString: string) => {
         const safeDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
         const date = new Date(safeDateString);
         const now = new Date();
         const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
         if (seconds <= 0) return "Just now";
-
-        let interval = seconds / 86400; // Days
+        let interval = seconds / 86400;
         if (interval >= 1) return Math.floor(interval) + " days ago";
-        
-        interval = seconds / 3600; // Hours
+        interval = seconds / 3600;
         if (interval >= 1) return Math.floor(interval) + " hours ago";
-        
-        interval = seconds / 60; // Minutes
+        interval = seconds / 60;
         if (interval >= 1) return Math.floor(interval) + " mins ago";
-
         return "Just now";
     };
 
     if (authLoading || isLoading) {
         return (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: 'var(--vandy-cream)' }}>
-                <div style={{ color: 'var(--vandy-gold)', fontWeight: 'bold' }}>Loading your listings...</div>
+                <div style={{ color: 'var(--vandy-gold)', fontWeight: 'bold' }}>Loading your profile...</div>
             </div>
         );
     }
 
-    const filteredListings = listings.filter(l => l.status === activeTab);
-    const activeCount = listings.filter(l => l.status === 'available').length;
-    const soldCount = listings.filter(l => l.status === 'sold').length;
-    const hiddenCount = listings.filter(l => l.status === 'hidden').length;
+    const activeListings = listings.filter(l => l.status === 'active' || l.status === 'pending');
+    const soldListings = listings.filter(l => l.status === 'sold');
+    const hiddenListings = listings.filter(l => l.status === 'hidden' || l.status === 'cancelled');
+
+    const getInitials = (name: string, email: string) => {
+        const str = name || email;
+        if (!str) return "?";
+        return str.substring(0, 2).toUpperCase();
+    };
 
     return (
         <div className={styles.myListingsMain}>
             <Navbar onSellClick={() => setIsSellModalOpen(true)} />
 
             <div className={styles.contentWrapper}>
-                <div className={styles.pageHeader}>
-                    <h1 className={styles.pageTitle}>My Listings</h1>
-                    <span className={styles.totalListings}>{listings.length} total listings</span>
+                {/* Profile Section */}
+                <div className={styles.profileSection}>
+                    <div className={styles.avatarContainer} onClick={handleAvatarClick}>
+                        <div className={styles.avatar}>
+                            {user?.profile_picture ? (
+                                <img src={user.profile_picture} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                getInitials(user?.full_name || '', user?.email || '')
+                            )}
+                        </div>
+                        <div className={styles.avatarOverlay}>
+                            <Camera size={24} />
+                        </div>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            style={{ display: 'none' }} 
+                            onChange={handleFileChange}
+                            accept="image/*"
+                        />
+                    </div>
+                    <div className={styles.profileInfo}>
+                        <h2>{user?.full_name || 'Set Your Name'}</h2>
+                        <p>{user?.email}</p>
+                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
+                            <button 
+                                onClick={logout}
+                                className={styles.cancelButton}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 16px', fontSize: '13px' }}
+                            >
+                                <LogOut size={14} /> Logout
+                            </button>
+                        </div>
+                    </div>
                 </div>
 
                 {error && <div style={{ color: 'red', marginBottom: '16px' }}>{error}</div>}
 
-                <div className={styles.segmentedControl}>
-                    <button 
-                        className={`${styles.segmentButton} ${activeTab === 'available' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('available')}
-                    >
-                        Active ({activeCount})
-                    </button>
-                    <button 
-                        className={`${styles.segmentButton} ${activeTab === 'sold' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('sold')}
-                    >
-                        Sold ({soldCount})
-                    </button>
-                    <button 
-                        className={`${styles.segmentButton} ${activeTab === 'hidden' ? styles.active : ''}`}
-                        onClick={() => setActiveTab('hidden')}
-                    >
-                        Hidden ({hiddenCount})
-                    </button>
+                {/* Active Listings Section */}
+                <div className={styles.sectionHeader}>
+                    <Package size={20} />
+                    Active Listings ({activeListings.length})
                 </div>
-
-                {filteredListings.length === 0 ? (
-                    <div style={{ textAlign: 'center', padding: '64px 0', color: 'var(--vandy-grey)' }}>
-                        You don't have any {activeTab} listings.
+                
+                {activeListings.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--vandy-grey)', backgroundColor: 'white', borderRadius: '16px', border: '1px dashed var(--vandy-sand)' }}>
+                        You don't have any items currently listed.
                     </div>
                 ) : (
                     <div className={styles.listingsGrid}>
-                        {filteredListings.map(listing => (
+                        {activeListings.map(listing => (
                             <MyListingCard
                                 key={listing.id}
                                 id={listing.id}
@@ -224,17 +293,118 @@ export default function MyListingsPage() {
                                 category={listing.category}
                                 views={listing.views}
                                 messageCount={listing.messageCount}
-                                status={listing.status}
+                                status={listing.status as any}
+                                sellerConfirmed={listing.seller_confirmed_sold}
+                                buyerConfirmed={listing.buyer_confirmed_sold}
                                 pendingOffers={listing.pendingOffers}
                                 onToggleVisibility={handleToggleVisibility}
                                 onMarkSold={handleMarkSold}
                                 onDelete={openDeleteModal}
                                 onAcceptOffer={(offerId) => handleAcceptOffer(offerId, listing.id)}
                                 onDeclineOffer={(offerId) => handleDeclineOffer(offerId, listing.id)}
+                                onConfirmSold={handleConfirmSold}
+                                onReverseActive={handleRevertActive}
                             />
                         ))}
                     </div>
                 )}
+
+                {/* Hidden Listings (if any) */}
+                {hiddenListings.length > 0 && (
+                    <>
+                        <div className={styles.sectionHeader} style={{ marginTop: '40px' }}>
+                            Hidden Listings ({hiddenListings.length})
+                        </div>
+                        <div className={styles.listingsGrid}>
+                            {hiddenListings.map(listing => (
+                                <MyListingCard
+                                    key={listing.id}
+                                    id={listing.id}
+                                    title={listing.title}
+                                    price={listing.price}
+                                    description={listing.description}
+                                    timeAgo={getTimeAgo(listing.created_at)}
+                                    image={listing.images[0]}
+                                    category={listing.category}
+                                    views={listing.views}
+                                    messageCount={listing.messageCount}
+                                    status={listing.status as any}
+                                    onToggleVisibility={handleToggleVisibility}
+                                    onMarkSold={handleMarkSold}
+                                    onDelete={openDeleteModal}
+                                />
+                            ))}
+                        </div>
+                    </>
+                )}
+
+                {/* Sold Items Accordion */}
+                <div className={styles.accordion} style={{ marginTop: '60px' }}>
+                    <div className={styles.accordionHeader} onClick={() => setIsSoldExpanded(!isSoldExpanded)}>
+                        <h2><Package size={20} color="var(--vandy-gold)" /> Items You've Sold ({soldListings.length})</h2>
+                        {isSoldExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
+                    {isSoldExpanded && (
+                        <div className={styles.accordionContent}>
+                            {soldListings.length === 0 ? (
+                                <p style={{ color: 'var(--vandy-grey)', textAlign: 'center', padding: '20px' }}>No items sold yet.</p>
+                            ) : (
+                                <div className={styles.listingsGrid} style={{ paddingBottom: 0 }}>
+                                    {soldListings.map(listing => (
+                                        <MyListingCard
+                                            key={listing.id}
+                                            id={listing.id}
+                                            title={listing.title}
+                                            price={listing.price}
+                                            description={listing.description}
+                                            timeAgo={getTimeAgo(listing.created_at)}
+                                            image={listing.images[0]}
+                                            category={listing.category}
+                                            views={listing.views}
+                                            messageCount={listing.messageCount}
+                                            status={listing.status as any}
+                                            onToggleVisibility={handleToggleVisibility}
+                                            onDelete={openDeleteModal}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* Purchased Items Accordion */}
+                <div className={styles.accordion}>
+                    <div className={styles.accordionHeader} onClick={() => setIsPurchasedExpanded(!isPurchasedExpanded)}>
+                        <h2><ShoppingBag size={20} color="var(--vandy-gold)" /> Items You've Purchased ({purchasedListings.length})</h2>
+                        {isPurchasedExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+                    </div>
+                    {isPurchasedExpanded && (
+                        <div className={styles.accordionContent}>
+                            {purchasedListings.length === 0 ? (
+                                <p style={{ color: 'var(--vandy-grey)', textAlign: 'center', padding: '20px' }}>No items purchased yet.</p>
+                            ) : (
+                                <div className={styles.listingsGrid} style={{ paddingBottom: 0 }}>
+                                    {purchasedListings.map(listing => (
+                                        <MyListingCard
+                                            key={listing.id}
+                                            id={listing.id}
+                                            title={listing.title}
+                                            price={listing.price}
+                                            description={listing.description}
+                                            timeAgo={getTimeAgo(listing.created_at)}
+                                            image={listing.images[0]}
+                                            category={listing.category}
+                                            views={listing.views}
+                                            messageCount={listing.messageCount}
+                                            status="sold"
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
             </div>
 
             <DeleteModal 
@@ -249,7 +419,7 @@ export default function MyListingsPage() {
                     onClose={() => setIsSellModalOpen(false)}
                     onSuccess={() => {
                         setIsSellModalOpen(false);
-                        fetchListings(); // Refresh listings after creating a new one
+                        fetchData();
                     }}
                 />
             )}

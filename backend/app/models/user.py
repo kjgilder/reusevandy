@@ -9,6 +9,7 @@ class User(Document):
     email: EmailStr = Field(unique=True)
     hashed_password: str
     full_name: Optional[str] = None
+    profile_picture: Optional[str] = None
     is_active: bool = True
     is_superuser: bool = False
 

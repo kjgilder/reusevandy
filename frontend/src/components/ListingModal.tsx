@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
-import { X, Upload, Loader2 } from 'lucide-react';
-import { createListing, updateListing, uploadListingImage } from '../utils/api';
+import { X, Upload, Loader2, Plus, Trash2 } from 'lucide-react';
+import Image from 'next/image';
+import { createListing, updateListing, uploadListingImage, deleteListingImage, BASE_URL } from '../utils/api';
 
 interface ListingModalProps {
     isOpen: boolean;
@@ -13,7 +13,8 @@ interface ListingModalProps {
         description: string;
         price: number;
         category: string;
-        image?: string;
+        images?: string[];
+        image?: string; // Legacy support
     } | null;
 }
 
@@ -31,7 +32,9 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState(CATEGORIES[0]);
     const [description, setDescription] = useState('');
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [existingImages, setExistingImages] = useState<string[]>([]);
+    const [newImageFiles, setNewImageFiles] = useState<File[]>([]);
+    const [previews, setPreviews] = useState<string[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -41,15 +44,51 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
             setPrice(initialListing.price.toString());
             setCategory(initialListing.category);
             setDescription(initialListing.description);
+            // Handle both images array and legacy single image field
+            const images = initialListing.images || (initialListing.image ? [initialListing.image] : []);
+            setExistingImages(images);
         } else {
             setTitle('');
             setPrice('');
             setCategory(CATEGORIES[0]);
             setDescription('');
+            setExistingImages([]);
         }
+        setNewImageFiles([]);
+        setPreviews([]);
     }, [initialListing, isOpen]);
 
     if (!isOpen) return null;
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files) {
+            const files = Array.from(e.target.files);
+            setNewImageFiles(prev => [...prev, ...files]);
+            
+            const newPreviews = files.map(file => URL.createObjectURL(file));
+            setPreviews(prev => [...prev, ...newPreviews]);
+        }
+    };
+
+    const removeNewImage = (index: number) => {
+        setNewImageFiles(prev => prev.filter((_, i) => i !== index));
+        URL.revokeObjectURL(previews[index]);
+        setPreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const removeExistingImage = async (imageUrl: string) => {
+        if (!initialListing) return;
+        
+        try {
+            setLoading(true);
+            await deleteListingImage(initialListing.id, imageUrl);
+            setExistingImages(prev => prev.filter(url => url !== imageUrl));
+        } catch (err: any) {
+            setError(err.message || 'Failed to delete image');
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -62,7 +101,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                 price: parseFloat(price),
                 description,
                 category,
-                images: initialListing?.image ? [initialListing.image] : []
+                images: existingImages
             };
 
             let listingId = initialListing?.id;
@@ -74,24 +113,20 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                  listingId = newListing.id;
             }
 
-            // If an image was provided, upload it 
-            if (imageFile && listingId) {
-                await uploadListingImage(listingId, imageFile);
+            // Upload all new images
+            if (listingId && newImageFiles.length > 0) {
+                for (const file of newImageFiles) {
+                    await uploadListingImage(listingId, file);
+                }
             }
 
             onSuccess();
             onClose();
-            // Reset form
-            setTitle('');
-            setPrice('');
-            setCategory(CATEGORIES[0]);
-            setDescription('');
-            setImageFile(null);
         } catch (err: unknown) {
             if (err instanceof Error) {
-                setError(err.message || 'Failed to create listing');
+                setError(err.message || 'Failed to save listing');
             } else {
-                setError('Failed to create listing');
+                setError('Failed to save listing');
             }
         } finally {
             setLoading(false);
@@ -101,24 +136,22 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
     return (
         <div style={{
             position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            top: 0, left: 0, right: 0, bottom: 0,
             backgroundColor: 'rgba(0,0,0,0.5)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             zIndex: 1000,
-            backdropFilter: 'blur(4px)'
+            backdropFilter: 'blur(4px)',
+            padding: '20px'
         }}>
             <div style={{
                 backgroundColor: 'white',
-                borderRadius: '12px',
+                borderRadius: '16px',
                 width: '100%',
-                maxWidth: '500px',
-                padding: '24px',
-                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                maxWidth: '600px',
+                padding: '32px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
                 position: 'relative',
                 maxHeight: '90vh',
                 overflowY: 'auto'
@@ -127,68 +160,127 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                     onClick={onClose}
                     style={{
                         position: 'absolute',
-                        top: '16px',
-                        right: '16px',
+                        top: '20px',
+                        right: '20px',
                         background: 'none',
                         border: 'none',
                         cursor: 'pointer',
-                        color: '#666'
+                        color: '#9ca3af',
+                        transition: 'color 0.2s'
                     }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#1f2937'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
                 >
                     <X size={24} />
                 </button>
 
-                <h2 style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '24px', color: '#1a1a1a' }}>Sell an Item</h2>
+                <h2 style={{ fontSize: '28px', fontWeight: '800', marginBottom: '28px', color: '#111827', fontFamily: 'Outfit, sans-serif' }}>
+                    {initialListing ? 'Edit Listing' : 'Sell an Item'}
+                </h2>
 
                 {error && (
-                    <div style={{ padding: '12px', backgroundColor: '#fee2e2', color: '#dc2626', borderRadius: '6px', marginBottom: '16px' }}>
+                    <div style={{ padding: '12px 16px', backgroundColor: '#fef2f2', color: '#b91c1c', borderRadius: '8px', marginBottom: '20px', fontSize: '14px', border: '1px solid #fecaca' }}>
                         {error}
                     </div>
                 )}
 
-                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-                    {/* Image Upload */}
-                    <div style={{ marginBottom: '8px' }}>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Photo</label>
+                    {/* Image Grid */}
+                    <div>
+                        <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600, color: '#374151', fontSize: '15px' }}>Photos</label>
                         <div style={{
-                            border: '2px dashed #d1d5db',
-                            borderRadius: '8px',
-                            padding: '24px',
-                            textAlign: 'center',
-                            cursor: 'pointer',
-                            backgroundColor: '#f9fafb',
-                            transition: 'all 0.2s'
-                        }}
-                            onClick={() => document.getElementById('file-upload')?.click()}
-                        >
-                            {imageFile ? (
-                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#059669' }}>
-                                    <span style={{ fontWeight: 500 }}>{imageFile.name}</span>
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(100px, 1fr))',
+                            gap: '12px',
+                            marginBottom: '10px'
+                        }}>
+                            {/* Existing Images */}
+                            {existingImages.map((url, index) => (
+                                <div key={`existing-${index}`} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                                    <Image 
+                                        src={url.startsWith('http') ? url : `${BASE_URL}${url}`} 
+                                        alt={`Existing ${index}`} 
+                                        fill 
+                                        style={{ objectFit: 'cover' }} 
+                                    />
                                     <button
                                         type="button"
-                                        onClick={(e) => { e.stopPropagation(); setImageFile(null); }}
-                                        style={{ border: 'none', background: 'none', color: '#dc2626', cursor: 'pointer', fontSize: '12px', textDecoration: 'underline' }}
-                                    >Change</button>
+                                        onClick={() => removeExistingImage(url)}
+                                        style={{
+                                            position: 'absolute', top: '4px', right: '4px',
+                                            backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white',
+                                            border: 'none', borderRadius: '50%', width: '24px', height: '24px',
+                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}
+                                    >
+                                        <Trash2 size={12} />
+                                    </button>
                                 </div>
-                            ) : (
-                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', color: '#6b7280' }}>
-                                    <Upload size={24} />
-                                    <span>Click to upload photo</span>
+                            ))}
+                            
+                            {/* New Previews */}
+                            {previews.map((preview, index) => (
+                                <div key={`new-${index}`} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
+                                    <Image src={preview} alt={`New ${index}`} fill style={{ objectFit: 'cover' }} />
+                                    <button
+                                        type="button"
+                                        onClick={() => removeNewImage(index)}
+                                        style={{
+                                            position: 'absolute', top: '4px', right: '4px',
+                                            backgroundColor: 'rgba(239, 68, 68, 0.9)', color: 'white',
+                                            border: 'none', borderRadius: '50%', width: '24px', height: '24px',
+                                            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                                        }}
+                                    >
+                                        <X size={12} />
+                                    </button>
                                 </div>
-                            )}
-                            <input
-                                id="file-upload"
-                                type="file"
-                                accept="image/*"
-                                style={{ display: 'none' }}
-                                onChange={(e) => e.target.files && setImageFile(e.target.files[0])}
-                            />
+                            ))}
+
+                            {/* Add Button */}
+                            <div 
+                                onClick={() => document.getElementById('multi-file-upload')?.click()}
+                                style={{
+                                    aspectRatio: '1/1',
+                                    borderRadius: '8px',
+                                    border: '2px dashed #d1d5db',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    cursor: 'pointer',
+                                    backgroundColor: '#f9fafb',
+                                    color: '#6b7280',
+                                    gap: '4px',
+                                    transition: 'all 0.2s'
+                                }}
+                                onMouseEnter={e => {
+                                    e.currentTarget.style.borderColor = '#9ca3af';
+                                    e.currentTarget.style.backgroundColor = '#f3f4f6';
+                                }}
+                                onMouseLeave={e => {
+                                    e.currentTarget.style.borderColor = '#d1d5db';
+                                    e.currentTarget.style.backgroundColor = '#f9fafb';
+                                }}
+                            >
+                                <Plus size={24} />
+                                <span style={{ fontSize: '11px', fontWeight: 500 }}>Add Photo</span>
+                                <input
+                                    id="multi-file-upload"
+                                    type="file"
+                                    multiple
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    onChange={handleFileChange}
+                                />
+                            </div>
                         </div>
+                        <p style={{ fontSize: '12px', color: '#6b7280' }}>Tip: You can select multiple photos at once.</p>
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Title</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontWeight: 600, color: '#374151', fontSize: '15px' }}>Title</label>
                         <input
                             type="text"
                             required
@@ -196,19 +288,21 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                             onChange={e => setTitle(e.target.value)}
                             placeholder="What are you selling?"
                             style={{
-                                width: '100%',
-                                padding: '10px 12px',
-                                borderRadius: '6px',
+                                padding: '12px 16px',
+                                borderRadius: '10px',
                                 border: '1px solid #d1d5db',
                                 fontSize: '16px',
-                                outlineColor: '#8B7D5B'
+                                outline: 'none',
+                                transition: 'border-color 0.2s'
                             }}
+                            onFocus={e => e.currentTarget.style.borderColor = '#8B7D5B'}
+                            onBlur={e => e.currentTarget.style.borderColor = '#d1d5db'}
                         />
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: '#374151' }}>Offer Price ($)</label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontWeight: 600, color: '#374151', fontSize: '15px' }}>Price ($)</label>
                             <input
                                 type="number"
                                 required
@@ -218,29 +312,32 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                                 onChange={e => setPrice(e.target.value)}
                                 placeholder="0.00"
                                 style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    borderRadius: '6px',
-                                    border: '1px solid var(--vandy-sand)',
+                                    padding: '12px 16px',
+                                    borderRadius: '10px',
+                                    border: '1px solid #d1d5db',
                                     fontSize: '16px',
-                                    outlineColor: 'var(--vandy-gold)'
+                                    outline: 'none'
                                 }}
+                                onFocus={e => e.currentTarget.style.borderColor = '#8B7D5B'}
+                                onBlur={e => e.currentTarget.style.borderColor = '#d1d5db'}
                             />
                         </div>
-                        <div>
-                            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: 'var(--vandy-black)' }}>Category</label>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <label style={{ fontWeight: 600, color: '#374151', fontSize: '15px' }}>Category</label>
                             <select
                                 value={category}
                                 onChange={e => setCategory(e.target.value)}
                                 style={{
-                                    width: '100%',
-                                    padding: '10px 12px',
-                                    borderRadius: '6px',
-                                    border: '1px solid var(--vandy-sand)',
+                                    padding: '12px 16px',
+                                    borderRadius: '10px',
+                                    border: '1px solid #d1d5db',
                                     fontSize: '16px',
                                     backgroundColor: 'white',
-                                    outlineColor: 'var(--vandy-gold)'
+                                    outline: 'none',
+                                    cursor: 'pointer'
                                 }}
+                                onFocus={e => e.currentTarget.style.borderColor = '#8B7D5B'}
+                                onBlur={e => e.currentTarget.style.borderColor = '#d1d5db'}
                             >
                                 {CATEGORIES.map(cat => (
                                     <option key={cat} value={cat}>{cat}</option>
@@ -249,58 +346,59 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                         </div>
                     </div>
 
-                    <div>
-                        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 500, color: 'var(--vandy-black)' }}>Description</label>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <label style={{ fontWeight: 600, color: '#374151', fontSize: '15px' }}>Description</label>
                         <textarea
                             required
                             value={description}
                             onChange={e => setDescription(e.target.value)}
-                            placeholder="Describe your item..."
+                            placeholder="Tell us more about your item..."
                             rows={4}
                             style={{
-                                width: '100%',
-                                padding: '10px 12px',
-                                borderRadius: '6px',
-                                border: '1px solid var(--vandy-sand)',
+                                padding: '12px 16px',
+                                borderRadius: '10px',
+                                border: '1px solid #d1d5db',
                                 fontSize: '16px',
-                                resize: 'vertical',
-                                outlineColor: 'var(--vandy-gold)',
+                                resize: 'none',
+                                outline: 'none',
                                 fontFamily: 'inherit'
                             }}
+                            onFocus={e => e.currentTarget.style.borderColor = '#8B7D5B'}
+                            onBlur={e => e.currentTarget.style.borderColor = '#d1d5db'}
                         />
                     </div>
 
-                    <div style={{ marginTop: '8px' }}>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            style={{
-                                width: '100%',
-                                padding: '12px',
-                                backgroundColor: 'var(--vandy-gold)',
-                                color: 'var(--vandy-black)',
-                                border: 'none',
-                                borderRadius: '6px',
-                                fontSize: '16px',
-                                fontWeight: 700,
-                                cursor: loading ? 'not-allowed' : 'pointer',
-                                opacity: loading ? 0.7 : 1,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '8px',
-                                transition: 'background-color 0.2s'
-                            }}
-                        >
-                            {loading && <Loader2 size={20} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} />}
-                            {loading ? 'Posting...' : 'Post Listing'}
-                        </button>
-                    </div>
-
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        style={{
+                            marginTop: '12px',
+                            padding: '14px',
+                            backgroundColor: '#8B7D5B',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '10px',
+                            fontSize: '16px',
+                            fontWeight: '700',
+                            cursor: loading ? 'not-allowed' : 'pointer',
+                            opacity: loading ? 0.7 : 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '10px',
+                            transition: 'all 0.2s',
+                            boxShadow: '0 4px 6px -1px rgba(139, 125, 91, 0.2)'
+                        }}
+                    >
+                        {loading ? <Loader2 size={20} className="animate-spin" /> : (initialListing ? 'Update Listing' : 'Post Listing')}
+                    </button>
                     <style jsx>{`
                         @keyframes spin {
                             from { transform: rotate(0deg); }
                             to { transform: rotate(360deg); }
+                        }
+                        .animate-spin {
+                            animation: spin 1s linear infinite;
                         }
                     `}</style>
                 </form>

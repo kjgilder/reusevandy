@@ -1,14 +1,14 @@
-from datetime import timedelta
-from typing import Annotated, Any
+from typing import Annotated, Any, Optional
+import httpx
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 
-from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.core import security
 from app.core.config import get_settings
 from app.models.user import User
 from app.schemas.token import Token
-from app.schemas.user import UserCreate, UserOut
+from app.schemas.user import UserCreate, UserOut, UserUpdateInfo
 from app.api import deps
 
 router = APIRouter()
@@ -77,4 +77,65 @@ async def read_users_me(
     """
     Get current user
     """
+    return current_user
+    return current_user
+
+
+@router.patch("/me", response_model=UserOut)
+async def update_user_me(
+    user_in: UserUpdateInfo,
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+) -> Any:
+    """
+    Update own user profile
+    """
+    update_data = user_in.dict(exclude_unset=True)
+    await current_user.set(update_data)
+    return current_user
+
+
+@router.post("/profile-picture", response_model=UserOut)
+async def upload_profile_picture(
+    file: UploadFile = File(...),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Upload a profile picture. Stores it in Vercel Blob and saves the URL.
+    """
+    # Validate file type
+    if file.content_type not in ["image/jpeg", "image/png", "image/webp", "image/gif"]:
+        raise HTTPException(
+            status_code=400,
+            detail="Only image files are allowed (jpeg, png, webp, gif)",
+        )
+
+    file_data = await file.read()
+    filename = f"profiles/{current_user.id}/{file.filename}"
+
+    # Upload to Vercel Blob via REST API
+    async with httpx.AsyncClient() as client:
+        response = await client.put(
+            f"https://blob.vercel-storage.com/{filename}",
+            content=file_data,
+            headers={
+                "authorization": f"Bearer {settings.BLOB_READ_WRITE_TOKEN}",
+                "x-api-version": "7",
+                "content-type": file.content_type or "application/octet-stream",
+                "x-content-type": file.content_type or "application/octet-stream",
+                "access": "public",
+            },
+        )
+
+    if response.status_code != 200:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to upload profile picture to Vercel Blob: {response.text}",
+        )
+
+    blob_url = response.json()["url"]
+
+    # Save URL to user
+    current_user.profile_picture = blob_url
+    await current_user.set({"profile_picture": blob_url})
+
     return current_user

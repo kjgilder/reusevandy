@@ -43,7 +43,7 @@ async def read_listings(
     """
     Retrieve listings with filters.
     """
-    query = Listing.find(Listing.status == ListingStatus.AVAILABLE)
+    query = Listing.find(Listing.status == ListingStatus.ACTIVE)
 
     if search:
         # Simple regex or text search if indexed (using regex for simplicity now)
@@ -92,14 +92,34 @@ async def read_my_listings(
     limit: int = 100,
 ) -> Any:
     """
-    Retrieve listings for the current user.
+    Retrieve listings created by the current user.
     """
     query = Listing.find(Listing.seller.id == current_user.id)
     query = query.sort("-created_at")
 
     listings = await query.skip(skip).limit(limit).to_list()
 
-    # We need to fetch related seller data for response model
+    for listing in listings:
+        await listing.fetch_link(Listing.seller)
+
+    return listings
+
+
+@router.get("/purchased", response_model=List[ListingOut])
+async def read_purchased_listings(
+    current_user: User = Depends(deps.get_current_user),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve listings purchased by the current user.
+    """
+    # Find listings where buyer.id == current_user.id
+    query = Listing.find(Listing.buyer.id == current_user.id)
+    query = query.sort("-updated_at")
+
+    listings = await query.skip(skip).limit(limit).to_list()
+
     for listing in listings:
         await listing.fetch_link(Listing.seller)
 
@@ -215,4 +235,115 @@ async def upload_listing_image(
     listing.images.append(blob_url)
     await listing.set({"images": listing.images})
 
+    return listing
+
+
+@router.delete("/{id}/images")
+async def delete_listing_image(
+    id: UUID,
+    image_url: str = Query(...),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Remove a specific image URL from a listing.
+    """
+    listing = await Listing.get(id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    await listing.fetch_link(Listing.seller)
+    if listing.seller.id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    if image_url in listing.images:
+        listing.images.remove(image_url)
+        await listing.set({"images": listing.images})
+    else:
+        raise HTTPException(status_code=404, detail="Image URL not found in listing")
+
+
+@router.post("/{id}/confirm-sold")
+async def confirm_sold(
+    id: UUID,
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Confirm that the item has been sold.
+    Seller confirms first → status stays PENDING, seller_confirmed_sold = True.
+    Buyer then confirms → both flags True → status becomes SOLD.
+    """
+    listing = await Listing.get(id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    await listing.fetch_link(Listing.seller)
+
+    # Safely fetch buyer only if it exists
+    buyer_id = None
+    if listing.buyer:
+        try:
+            await listing.fetch_link(Listing.buyer)
+            buyer_id = listing.buyer.id if listing.buyer else None
+        except Exception:
+            buyer_id = None
+
+    if current_user.id == listing.seller.id:
+        listing.seller_confirmed_sold = True
+    elif buyer_id and current_user.id == buyer_id:
+        listing.buyer_confirmed_sold = True
+    else:
+        raise HTTPException(status_code=403, detail="Not authorized to confirm this transaction")
+
+    # Only mark as SOLD when both parties have confirmed
+    if listing.seller_confirmed_sold and listing.buyer_confirmed_sold:
+        listing.status = ListingStatus.SOLD
+
+    await listing.save()
+    return listing
+
+
+@router.post("/{id}/revert-active")
+async def revert_active(
+    id: UUID,
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Move a listing from Pending or Cancelled back to Active.
+    """
+    listing = await Listing.get(id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    await listing.fetch_link(Listing.seller)
+    if listing.seller.id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    listing.status = ListingStatus.ACTIVE
+    listing.seller_confirmed_sold = False
+    listing.buyer_confirmed_sold = False
+    # Optionally clear the buyer? Let's keep it for now if they want to try again
+    await listing.save()
+    return listing
+
+
+@router.post("/{id}/cancel")
+async def cancel_listing(
+    id: UUID,
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Cancel a listing or a pending transaction and put it back on market.
+    """
+    listing = await Listing.get(id)
+    if not listing:
+        raise HTTPException(status_code=404, detail="Listing not found")
+
+    await listing.fetch_link(Listing.seller)
+    if listing.seller.id != current_user.id and not current_user.is_superuser:
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+
+    listing.status = ListingStatus.ACTIVE
+    listing.seller_confirmed_sold = False
+    listing.buyer_confirmed_sold = False
+    await listing.save()
     return listing
