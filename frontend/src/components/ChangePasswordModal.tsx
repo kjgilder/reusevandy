@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { changePassword } from '../utils/api';
-import { KeyRound, X, Eye, EyeOff } from 'lucide-react';
+import { KeyRound, X, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -61,7 +61,8 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     width: '100%',
     padding: '10px 40px 10px 12px',
     borderRadius: '8px',
-    border: '1px solid var(--vandy-sand)',
+    border: '1px solid #e5e5e5',
+    color: 'var(--vandy-black)',
     fontSize: '14px',
     outline: 'none',
     boxSizing: 'border-box',
@@ -81,7 +82,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     border: 'none',
     cursor: 'pointer',
     padding: 0,
-    color: 'var(--vandy-grey)',
+    color: '#6b7280',
     display: 'flex',
     alignItems: 'center',
   };
@@ -94,30 +95,33 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
       <div style={{
         backgroundColor: 'white', borderRadius: '16px', padding: '32px',
         width: '100%', maxWidth: '400px', margin: '0 16px',
+        color: 'var(--vandy-black)',
         boxShadow: '0 20px 60px rgba(0,0,0,0.2)',
       }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <KeyRound size={20} color="var(--vandy-gold)" />
-            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700 }}>Change Password</h2>
+            <KeyRound size={20} color="var(--vandy-black)" />
+            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: 'var(--vandy-black)' }}>Change Password</h2>
           </div>
           <button onClick={handleClose} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-            <X size={20} color="var(--vandy-grey)" />
+            <X size={20} color="#6b7280" />
           </button>
         </div>
 
         {success ? (
           <div style={{ textAlign: 'center', padding: '16px 0' }}>
-            <div style={{ fontSize: '40px', marginBottom: '12px' }}>✅</div>
-            <p style={{ fontWeight: 600, marginBottom: '8px' }}>Password updated!</p>
-            <p style={{ color: 'var(--vandy-grey)', fontSize: '14px', marginBottom: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+              <CheckCircle2 size={48} color="#22c55e" />
+            </div>
+            <p style={{ fontWeight: 600, fontSize: '18px', marginBottom: '8px', color: 'var(--vandy-black)' }}>Password updated!</p>
+            <p style={{ color: '#4b5563', fontSize: '14px', marginBottom: '24px' }}>
               Your password has been changed successfully.
             </p>
             <button
               onClick={handleClose}
               style={{
-                backgroundColor: 'var(--vandy-gold)', color: 'white',
+                backgroundColor: 'var(--vandy-black)', color: 'white',
                 border: 'none', borderRadius: '8px', padding: '10px 24px',
                 fontWeight: 600, cursor: 'pointer', fontSize: '14px',
               }}
@@ -210,7 +214,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                 disabled={isLoading}
                 style={{
                   flex: 1, padding: '10px', borderRadius: '8px',
-                  backgroundColor: isLoading ? 'var(--vandy-sand)' : 'var(--vandy-gold)',
+                  backgroundColor: isLoading ? 'var(--vandy-sand)' : 'var(--vandy-black)',
                   color: 'white', border: 'none',
                   fontWeight: 600, cursor: isLoading ? 'not-allowed' : 'pointer', fontSize: '14px',
                 }}
