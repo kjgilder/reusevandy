@@ -203,7 +203,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                                         src={url.startsWith('http') ? url : `${BASE_URL}${url}`} 
                                         alt={`Existing ${index}`} 
                                         fill 
-                                        style={{ objectFit: 'cover' }} 
+                                        style={{ objectFit: 'contain' }} 
                                     />
                                     <button
                                         type="button"
@@ -223,7 +223,7 @@ export default function ListingModal({ isOpen, onClose, onSuccess, initialListin
                             {/* New Previews */}
                             {previews.map((preview, index) => (
                                 <div key={`new-${index}`} style={{ position: 'relative', aspectRatio: '1/1', borderRadius: '8px', overflow: 'hidden', border: '1px solid #e5e7eb' }}>
-                                    <Image src={preview} alt={`New ${index}`} fill style={{ objectFit: 'cover' }} />
+                                    <Image src={preview} alt={`New ${index}`} fill style={{ objectFit: 'contain' }} />
                                     <button
                                         type="button"
                                         onClick={() => removeNewImage(index)}

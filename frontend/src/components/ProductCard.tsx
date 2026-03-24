@@ -77,7 +77,7 @@ export default function ProductCard({ title, description, price, images, image, 
                         src={imageUrl}
                         alt={title}
                         fill
-                        style={{ objectFit: 'cover', transition: 'transform 0.5s ease' }}
+                        style={{ objectFit: 'contain', transition: 'transform 0.5s ease' }}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     />
                 ) : (
