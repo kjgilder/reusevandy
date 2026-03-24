@@ -143,10 +143,17 @@ export interface Conversation {
   listing: {
     id: string;
     title: string;
+    description: string;
     price: number;
+    category: string;
+    images: string[];
+    views: number;
+    message_count: number;
     status: string;
     seller_confirmed_sold: boolean;
     buyer_confirmed_sold: boolean;
+    created_at: string;
+    seller: UserParticipant;
   };
   buyer: UserParticipant;
   seller: UserParticipant;
