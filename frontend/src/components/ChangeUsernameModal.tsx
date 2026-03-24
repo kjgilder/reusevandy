@@ -31,8 +31,9 @@ export default function ChangeUsernameModal({ isOpen, onClose, currentName, onSu
         try {
             await updateProfile({ full_name: name.trim() });
             onSuccess(name.trim());
-        } catch (err: any) {
-            setError(err.message || 'Failed to update username');
+        } catch (err: unknown) {
+            const error = err as { message?: string };
+            setError(error.message || 'Failed to update username');
         } finally {
             setIsLoading(false);
         }

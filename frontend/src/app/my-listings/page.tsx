@@ -498,7 +498,7 @@ export default function MyListingsPage() {
                 isOpen={isChangeNameOpen}
                 onClose={() => setIsChangeNameOpen(false)}
                 currentName={user?.full_name || ''}
-                onSuccess={(newName) => {
+                onSuccess={() => {
                     setIsChangeNameOpen(false);
                     window.location.reload();
                 }}
