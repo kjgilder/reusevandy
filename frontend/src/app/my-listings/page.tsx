@@ -342,6 +342,7 @@ export default function MyListingsPage() {
                                 description={listing.description}
                                 timeAgo={getTimeAgo(listing.created_at)}
                                 image={listing.images[0]}
+                                images={listing.images}
                                 category={listing.category}
                                 views={listing.views}
                                 messageCount={listing.messageCount}
@@ -378,6 +379,7 @@ export default function MyListingsPage() {
                                     description={listing.description}
                                     timeAgo={getTimeAgo(listing.created_at)}
                                     image={listing.images[0]}
+                                    images={listing.images}
                                     category={listing.category}
                                     views={listing.views}
                                     messageCount={listing.messageCount}
@@ -413,6 +415,7 @@ export default function MyListingsPage() {
                                             description={listing.description}
                                             timeAgo={getTimeAgo(listing.created_at)}
                                             image={listing.images[0]}
+                                            images={listing.images}
                                             category={listing.category}
                                             views={listing.views}
                                             messageCount={listing.messageCount}
@@ -448,6 +451,7 @@ export default function MyListingsPage() {
                                             description={listing.description}
                                             timeAgo={getTimeAgo(listing.created_at)}
                                             image={listing.images[0]}
+                                            images={listing.images}
                                             category={listing.category}
                                             views={listing.views}
                                             messageCount={listing.messageCount}

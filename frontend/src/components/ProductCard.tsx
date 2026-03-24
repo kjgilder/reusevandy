@@ -1,5 +1,7 @@
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { BASE_URL } from '../utils/api';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ProductCardProps {
     id: string;
@@ -17,8 +19,22 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ title, description, price, images, image, seller, timeAgo, category, onClick }: ProductCardProps) {
-    const displayImage = (images && images.length > 0) ? images[0] : image;
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const displayImages = (images && images.length > 0) ? images : (image ? [image] : []);
+    const hasMultipleImages = displayImages.length > 1;
+    
+    const displayImage = displayImages.length > 0 ? displayImages[currentImageIndex] : null;
     const imageUrl = displayImage ? (displayImage.startsWith('http') ? displayImage : `${BASE_URL}${displayImage}`) : null;
+
+    const nextImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+    };
 
     return (
         <div
@@ -68,6 +84,46 @@ export default function ProductCard({ title, description, price, images, image, 
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--vandy-grey)', fontWeight: '500' }}>
                         No Image Available
                     </div>
+                )}
+
+                {hasMultipleImages && (
+                    <>
+                        <button 
+                            onClick={prevImage}
+                            style={{
+                                position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)',
+                                backgroundColor: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%',
+                                padding: '4px', cursor: 'pointer', zIndex: 10, display: 'flex'
+                            }}
+                        >
+                            <ChevronLeft size={16} color="var(--vandy-black)" />
+                        </button>
+                        <button 
+                            onClick={nextImage}
+                            style={{
+                                position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                                backgroundColor: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%',
+                                padding: '4px', cursor: 'pointer', zIndex: 10, display: 'flex'
+                            }}
+                        >
+                            <ChevronRight size={16} color="var(--vandy-black)" />
+                        </button>
+                        <div style={{
+                            position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)',
+                            display: 'flex', gap: '4px', zIndex: 10
+                        }}>
+                            {displayImages.map((_, i) => (
+                                <div 
+                                    key={i} 
+                                    style={{
+                                        width: '6px', height: '6px', borderRadius: '50%',
+                                        backgroundColor: i === currentImageIndex ? 'var(--vandy-gold)' : 'rgba(255,255,255,0.5)',
+                                        transition: 'all 0.3s'
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </>
                 )}
 
                 <span style={{
