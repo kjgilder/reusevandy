@@ -151,7 +151,7 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                                 src={images[currentImageIndex].startsWith('http') ? images[currentImageIndex] : `${BASE_URL}${images[currentImageIndex]}`} 
                                 alt={`${listing.title} - ${currentImageIndex + 1}`} 
                                 fill 
-                                style={{ objectFit: 'cover' }} 
+                                style={{ objectFit: 'contain' }} 
                             />
                             
                             {images.length > 1 && (
