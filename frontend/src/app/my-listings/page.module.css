@@ -231,3 +231,24 @@
     align-items: center;
     gap: 8px;
 }
+
+.dropdownItem {
+    width: 100%;
+    text-align: left;
+    padding: 12px 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--vandy-black);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.2s;
+}
+
+.dropdownItem:hover {
+    background-color: #f3f4f6;
+}
+
