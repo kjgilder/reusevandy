@@ -1,6 +1,6 @@
 import Image from 'next/image';
 import { BASE_URL } from '../utils/api';
-import { Eye, EyeOff, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, EyeOff, Trash2, CheckCircle, XCircle, Edit } from 'lucide-react';
 
 export interface PendingOffer {
     id: string;
@@ -28,6 +28,7 @@ interface MyListingCardProps {
     onToggleVisibility?: (id: string, currentStatus: string) => void;
     onMarkSold?: (id: string) => void;
     onDelete?: (id: string) => void;
+    onEdit?: (id: string) => void;
     onAcceptOffer?: (offerId: string) => void;
     onDeclineOffer?: (offerId: string) => void;
     onConfirmSold?: (id: string) => void;
@@ -49,6 +50,7 @@ export default function MyListingCard({
     onToggleVisibility,
     onMarkSold,
     onDelete,
+    onEdit,
     onAcceptOffer,
     onDeclineOffer,
     onConfirmSold,
@@ -228,7 +230,7 @@ export default function MyListingCard({
                 </div>
 
                 {/* Action Buttons */}
-                {(onToggleVisibility || onMarkSold || onDelete || onConfirmSold || onReverseActive) && (
+                {(onToggleVisibility || onMarkSold || onDelete || onEdit || onConfirmSold || onReverseActive) && (
                     <div style={{
                         display: 'flex',
                         gap: '12px',
@@ -333,6 +335,32 @@ export default function MyListingCard({
                                 }}
                             >
                                 {isSold ? 'Re-List' : 'Mark as Sold'}
+                            </button>
+                        )}
+
+                        {onEdit && (
+                            <button
+                                onClick={() => onEdit(id)}
+                                disabled={isSold}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 16px',
+                                    backgroundColor: 'white',
+                                    border: '1px solid var(--vandy-gold)',
+                                    borderRadius: '8px',
+                                    color: 'var(--vandy-black)',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: isSold ? 'not-allowed' : 'pointer',
+                                    opacity: isSold ? 0.3 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Edit size={16} /> Edit
                             </button>
                         )}
 

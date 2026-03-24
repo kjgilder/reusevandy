@@ -55,6 +55,7 @@ export default function MyListingsPage() {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [listingToDelete, setListingToDelete] = useState<string | null>(null);
     const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+    const [listingToEdit, setListingToEdit] = useState<Listing | null>(null);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
     const [isSoldExpanded, setIsSoldExpanded] = useState(false);
@@ -350,6 +351,7 @@ export default function MyListingsPage() {
                                 pendingOffers={listing.pendingOffers}
                                 onToggleVisibility={handleToggleVisibility}
                                 onMarkSold={handleMarkSold}
+                                onEdit={(id) => setListingToEdit(listings.find(l => l.id === id) || null)}
                                 onDelete={openDeleteModal}
                                 onAcceptOffer={(offerId) => handleAcceptOffer(offerId)}
                                 onDeclineOffer={(offerId) => handleDeclineOffer(offerId, listing.id)}
@@ -382,6 +384,7 @@ export default function MyListingsPage() {
                                     status={listing.status}
                                     onToggleVisibility={handleToggleVisibility}
                                     onMarkSold={handleMarkSold}
+                                    onEdit={(id) => setListingToEdit(listings.find(l => l.id === id) || null)}
                                     onDelete={openDeleteModal}
                                 />
                             ))}
@@ -464,12 +467,17 @@ export default function MyListingsPage() {
                 onConfirm={confirmDelete}
             />
 
-            {isSellModalOpen && (
+            {(isSellModalOpen || !!listingToEdit) && (
                 <ListingModal
-                    isOpen={isSellModalOpen}
-                    onClose={() => setIsSellModalOpen(false)}
+                    isOpen={isSellModalOpen || !!listingToEdit}
+                    onClose={() => {
+                        setIsSellModalOpen(false);
+                        setListingToEdit(null);
+                    }}
+                    initialListing={listingToEdit || undefined}
                     onSuccess={() => {
                         setIsSellModalOpen(false);
+                        setListingToEdit(null);
                         fetchData();
                     }}
                 />
