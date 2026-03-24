@@ -167,6 +167,7 @@ export default function HomePage() {
                                 timeAgo={getTimeAgo(listing.created_at)}
                                 category={listing.category}
                                 image={listing.images && listing.images.length > 0 ? listing.images[0] : undefined}
+                                images={listing.images}
                                 onClick={() => {
                                     if (!user) {
                                         router.push('/login');

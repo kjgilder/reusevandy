@@ -7,6 +7,7 @@ import MyListingCard from '../../components/MyListingCard';
 import DeleteModal from '../../components/DeleteModal';
 import ListingModal from '../../components/ListingModal';
 import ChangePasswordModal from '../../components/ChangePasswordModal';
+import ChangeUsernameModal from '../../components/ChangeUsernameModal';
 import {
     getMyListings,
     getPurchasedListings,
@@ -22,7 +23,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import styles from './page.module.css';
 import { PendingOffer } from '../../components/MyListingCard';
-import { ChevronDown, ChevronUp, Package, ShoppingBag, Camera, LogOut, KeyRound } from 'lucide-react';
+import { ChevronDown, ChevronUp, Package, ShoppingBag, Camera, LogOut, KeyRound, Settings, User } from 'lucide-react';
 import Image from 'next/image';
 
 interface Listing {
@@ -54,12 +55,29 @@ export default function MyListingsPage() {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [listingToDelete, setListingToDelete] = useState<string | null>(null);
     const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+    const [listingToEdit, setListingToEdit] = useState<Listing | null>(null);
     const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
 
     const [isSoldExpanded, setIsSoldExpanded] = useState(false);
     const [isPurchasedExpanded, setIsPurchasedExpanded] = useState(false);
 
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [isChangeNameOpen, setIsChangeNameOpen] = useState(false);
+
+    const settingsRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (settingsRef.current && !settingsRef.current.contains(event.target as Node)) {
+                setIsSettingsOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     useEffect(() => {
         if (!authLoading && !isAuthenticated) {
@@ -252,24 +270,51 @@ export default function MyListingsPage() {
                             accept="image/*"
                         />
                     </div>
-                    <div className={styles.profileInfo}>
-                        <h2>{user?.full_name || 'Set Your Name'}</h2>
-                        <p>{user?.email}</p>
-                        <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                            <button
-                                onClick={logout}
-                                className={styles.cancelButton}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 16px', fontSize: '13px' }}
-                            >
-                                <LogOut size={14} /> Logout
-                            </button>
-                            <button
-                                onClick={() => setIsChangePasswordOpen(true)}
-                                className={styles.cancelButton}
-                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 16px', fontSize: '13px' }}
-                            >
-                                <KeyRound size={14} /> Change Password
-                            </button>
+                    <div className={styles.profileInfo} style={{ flexGrow: 1 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                            <div>
+                                <h2>{user?.full_name || 'Set Your Name'}</h2>
+                                <p>{user?.email}</p>
+                            </div>
+                            <div ref={settingsRef} style={{ position: 'relative' }}>
+                                <button
+                                    onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '8px', color: 'var(--vandy-grey)' }}
+                                    aria-label="Settings"
+                                >
+                                    <Settings size={24} />
+                                </button>
+                                {isSettingsOpen && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        right: 0,
+                                        backgroundColor: 'white',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                        borderRadius: '8px',
+                                        padding: '8px 0',
+                                        zIndex: 10,
+                                        width: '240px',
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        border: '1px solid var(--vandy-sand)'
+                                    }}>
+                                        <button className={styles.dropdownItem} onClick={() => { setIsSettingsOpen(false); setIsChangeNameOpen(true); }}>
+                                            <User size={16} /> Change Username
+                                        </button>
+                                        <button className={styles.dropdownItem} onClick={() => { setIsSettingsOpen(false); handleAvatarClick(); }}>
+                                            <Camera size={16} /> Change Profile Picture
+                                        </button>
+                                        <button className={styles.dropdownItem} onClick={() => { setIsSettingsOpen(false); setIsChangePasswordOpen(true); }}>
+                                            <KeyRound size={16} /> Change Password
+                                        </button>
+                                        <hr style={{ borderTop: '1px solid #eee', margin: '4px 0' }} />
+                                        <button className={styles.dropdownItem} onClick={() => { setIsSettingsOpen(false); logout(); }} style={{ color: '#e11d48' }}>
+                                            <LogOut size={16} /> Logout
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -297,6 +342,7 @@ export default function MyListingsPage() {
                                 description={listing.description}
                                 timeAgo={getTimeAgo(listing.created_at)}
                                 image={listing.images[0]}
+                                images={listing.images}
                                 category={listing.category}
                                 views={listing.views}
                                 messageCount={listing.messageCount}
@@ -306,6 +352,7 @@ export default function MyListingsPage() {
                                 pendingOffers={listing.pendingOffers}
                                 onToggleVisibility={handleToggleVisibility}
                                 onMarkSold={handleMarkSold}
+                                onEdit={(id) => setListingToEdit(listings.find(l => l.id === id) || null)}
                                 onDelete={openDeleteModal}
                                 onAcceptOffer={(offerId) => handleAcceptOffer(offerId)}
                                 onDeclineOffer={(offerId) => handleDeclineOffer(offerId, listing.id)}
@@ -332,12 +379,14 @@ export default function MyListingsPage() {
                                     description={listing.description}
                                     timeAgo={getTimeAgo(listing.created_at)}
                                     image={listing.images[0]}
+                                    images={listing.images}
                                     category={listing.category}
                                     views={listing.views}
                                     messageCount={listing.messageCount}
                                     status={listing.status}
                                     onToggleVisibility={handleToggleVisibility}
                                     onMarkSold={handleMarkSold}
+                                    onEdit={(id) => setListingToEdit(listings.find(l => l.id === id) || null)}
                                     onDelete={openDeleteModal}
                                 />
                             ))}
@@ -366,6 +415,7 @@ export default function MyListingsPage() {
                                             description={listing.description}
                                             timeAgo={getTimeAgo(listing.created_at)}
                                             image={listing.images[0]}
+                                            images={listing.images}
                                             category={listing.category}
                                             views={listing.views}
                                             messageCount={listing.messageCount}
@@ -401,6 +451,7 @@ export default function MyListingsPage() {
                                             description={listing.description}
                                             timeAgo={getTimeAgo(listing.created_at)}
                                             image={listing.images[0]}
+                                            images={listing.images}
                                             category={listing.category}
                                             views={listing.views}
                                             messageCount={listing.messageCount}
@@ -420,12 +471,17 @@ export default function MyListingsPage() {
                 onConfirm={confirmDelete}
             />
 
-            {isSellModalOpen && (
+            {(isSellModalOpen || !!listingToEdit) && (
                 <ListingModal
-                    isOpen={isSellModalOpen}
-                    onClose={() => setIsSellModalOpen(false)}
+                    isOpen={isSellModalOpen || !!listingToEdit}
+                    onClose={() => {
+                        setIsSellModalOpen(false);
+                        setListingToEdit(null);
+                    }}
+                    initialListing={listingToEdit || undefined}
                     onSuccess={() => {
                         setIsSellModalOpen(false);
+                        setListingToEdit(null);
                         fetchData();
                     }}
                 />
@@ -436,6 +492,16 @@ export default function MyListingsPage() {
             <ChangePasswordModal
                 isOpen={isChangePasswordOpen}
                 onClose={() => setIsChangePasswordOpen(false)}
+            />
+
+            <ChangeUsernameModal
+                isOpen={isChangeNameOpen}
+                onClose={() => setIsChangeNameOpen(false)}
+                currentName={user?.full_name || ''}
+                onSuccess={() => {
+                    setIsChangeNameOpen(false);
+                    window.location.reload();
+                }}
             />
         </div>
     );

@@ -15,7 +15,7 @@ export default function BottomNav() {
             try {
                 const data = await getUnreadTotal();
                 setUnreadCount(data.total);
-                
+
                 // Also trigger a custom event that other components can listen to
                 // this is useful if we want to sync unread counts across the app
                 window.dispatchEvent(new CustomEvent('unreadCountUpdate', { detail: data.total }));
@@ -97,7 +97,7 @@ export default function BottomNav() {
             </Link>
             <Link href="/my-listings" style={getLinkStyle('/my-listings')}>
                 <User size={24} />
-                <span style={getTextStyle('/my-listings')}>My Listings</span>
+                <span style={getTextStyle('/my-listings')}>My Profile</span>
             </Link>
         </nav>
     );

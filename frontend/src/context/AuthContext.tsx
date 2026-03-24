@@ -33,9 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
                 try {
                     const userData = await apiRequest('/auth/me');
                     setUser(userData);
-                } catch (error) {
-                    console.error('Failed to fetch user:', error);
+                } catch {
+                    // Mute console.error to prevent Next.js dev overlay from showing up for 401s
                     localStorage.removeItem('token');
+                    setUser(null);
                 }
             }
             setLoading(false);

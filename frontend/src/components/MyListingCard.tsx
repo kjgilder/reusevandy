@@ -1,6 +1,7 @@
+import React, { useState } from 'react';
 import Image from 'next/image';
 import { BASE_URL } from '../utils/api';
-import { Eye, EyeOff, Trash2, CheckCircle, XCircle } from 'lucide-react';
+import { Eye, EyeOff, Trash2, CheckCircle, XCircle, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export interface PendingOffer {
     id: string;
@@ -18,6 +19,7 @@ interface MyListingCardProps {
     description: string;
     timeAgo: string;
     image?: string;
+    images?: string[];
     category: string;
     views?: number;
     messageCount?: number;
@@ -28,6 +30,7 @@ interface MyListingCardProps {
     onToggleVisibility?: (id: string, currentStatus: string) => void;
     onMarkSold?: (id: string) => void;
     onDelete?: (id: string) => void;
+    onEdit?: (id: string) => void;
     onAcceptOffer?: (offerId: string) => void;
     onDeclineOffer?: (offerId: string) => void;
     onConfirmSold?: (id: string) => void;
@@ -41,6 +44,7 @@ export default function MyListingCard({
     description,
     timeAgo,
     image,
+    images,
     category,
     views = 0,
     messageCount = 0,
@@ -49,6 +53,7 @@ export default function MyListingCard({
     onToggleVisibility,
     onMarkSold,
     onDelete,
+    onEdit,
     onAcceptOffer,
     onDeclineOffer,
     onConfirmSold,
@@ -56,7 +61,23 @@ export default function MyListingCard({
     sellerConfirmed = false,
     buyerConfirmed = false
 }: MyListingCardProps) {
-    const imageUrl = image ? (image.startsWith('http') ? image : `${BASE_URL}${image}`) : null;
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const displayImages = (images && images.length > 0) ? images : (image ? [image] : []);
+    const hasMultipleImages = displayImages.length > 1;
+    
+    const displayImage = displayImages.length > 0 ? displayImages[currentImageIndex] : null;
+    const imageUrl = displayImage ? (displayImage.startsWith('http') ? displayImage : `${BASE_URL}${displayImage}`) : null;
+
+    const nextImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev + 1) % displayImages.length);
+    };
+
+    const prevImage = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setCurrentImageIndex((prev) => (prev - 1 + displayImages.length) % displayImages.length);
+    };
+
     const isHidden = status === 'hidden' || status === 'cancelled';
     const isSold = status === 'sold';
     const isPending = status === 'pending';
@@ -90,6 +111,46 @@ export default function MyListingCard({
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--vandy-grey)', fontWeight: '500' }}>
                         No Image
                     </div>
+                )}
+
+                {hasMultipleImages && (
+                    <>
+                        <button 
+                            onClick={prevImage}
+                            style={{
+                                position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)',
+                                backgroundColor: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%',
+                                padding: '4px', cursor: 'pointer', zIndex: 10, display: 'flex'
+                            }}
+                        >
+                            <ChevronLeft size={16} color="var(--vandy-black)" />
+                        </button>
+                        <button 
+                            onClick={nextImage}
+                            style={{
+                                position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)',
+                                backgroundColor: 'rgba(255,255,255,0.7)', border: 'none', borderRadius: '50%',
+                                padding: '4px', cursor: 'pointer', zIndex: 10, display: 'flex'
+                            }}
+                        >
+                            <ChevronRight size={16} color="var(--vandy-black)" />
+                        </button>
+                        <div style={{
+                            position: 'absolute', bottom: '8px', left: '50%', transform: 'translateX(-50%)',
+                            display: 'flex', gap: '4px', zIndex: 10
+                        }}>
+                            {displayImages.map((_, i) => (
+                                <div 
+                                    key={i} 
+                                    style={{
+                                        width: '6px', height: '6px', borderRadius: '50%',
+                                        backgroundColor: i === currentImageIndex ? 'var(--vandy-gold)' : 'rgba(255,255,255,0.5)',
+                                        transition: 'all 0.3s'
+                                    }}
+                                />
+                            ))}
+                        </div>
+                    </>
                 )}
 
                 {/* Overlays for Sold/Hidden/Pending */}
@@ -228,7 +289,7 @@ export default function MyListingCard({
                 </div>
 
                 {/* Action Buttons */}
-                {(onToggleVisibility || onMarkSold || onDelete || onConfirmSold || onReverseActive) && (
+                {(onToggleVisibility || onMarkSold || onDelete || onEdit || onConfirmSold || onReverseActive) && (
                     <div style={{
                         display: 'flex',
                         gap: '12px',
@@ -333,6 +394,32 @@ export default function MyListingCard({
                                 }}
                             >
                                 {isSold ? 'Re-List' : 'Mark as Sold'}
+                            </button>
+                        )}
+
+                        {onEdit && (
+                            <button
+                                onClick={() => onEdit(id)}
+                                disabled={isSold}
+                                style={{
+                                    flex: 1,
+                                    padding: '8px 16px',
+                                    backgroundColor: 'white',
+                                    border: '1px solid var(--vandy-gold)',
+                                    borderRadius: '8px',
+                                    color: 'var(--vandy-black)',
+                                    fontWeight: '600',
+                                    fontSize: '13px',
+                                    cursor: isSold ? 'not-allowed' : 'pointer',
+                                    opacity: isSold ? 0.3 : 1,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '8px',
+                                    transition: 'all 0.2s'
+                                }}
+                            >
+                                <Edit size={16} /> Edit
                             </button>
                         )}
 
