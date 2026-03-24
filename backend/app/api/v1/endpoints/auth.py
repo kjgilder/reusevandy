@@ -9,7 +9,7 @@ from app.core import security
 from app.core.config import get_settings
 from app.models.user import User
 from app.schemas.token import Token
-from app.schemas.user import UserCreate, UserOut, UserUpdateInfo
+from app.schemas.user import UserCreate, UserOut, UserUpdateInfo, ChangePassword
 from app.api import deps
 
 router = APIRouter()
@@ -140,3 +140,22 @@ async def upload_profile_picture(
     await current_user.set({"profile_picture": blob_url})
 
     return current_user
+
+
+@router.post("/change-password")
+async def change_password(
+    passwords: ChangePassword,
+    current_user: Annotated[User, Depends(deps.get_current_user)],
+) -> Any:
+    """
+    Change password for the current user
+    """
+    if not security.verify_password(passwords.current_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect current password",
+        )
+
+    new_hashed = security.get_password_hash(passwords.new_password)
+    await current_user.set({"hashed_password": new_hashed})
+    return {"message": "Password updated successfully"}

@@ -6,12 +6,13 @@ import BottomNav from '../../components/BottomNav';
 import MyListingCard from '../../components/MyListingCard';
 import DeleteModal from '../../components/DeleteModal';
 import ListingModal from '../../components/ListingModal';
-import { 
-    getMyListings, 
-    getPurchasedListings, 
-    updateListingStatus, 
-    deleteListing, 
-    getPendingOffers, 
+import ChangePasswordModal from '../../components/ChangePasswordModal';
+import {
+    getMyListings,
+    getPurchasedListings,
+    updateListingStatus,
+    deleteListing,
+    getPendingOffers,
     updateOfferStatus,
     uploadProfilePicture,
     confirmTransaction,
@@ -21,7 +22,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../context/AuthContext';
 import styles from './page.module.css';
 import { PendingOffer } from '../../components/MyListingCard';
-import { ChevronDown, ChevronUp, Package, ShoppingBag, Camera, LogOut } from 'lucide-react';
+import { ChevronDown, ChevronUp, Package, ShoppingBag, Camera, LogOut, KeyRound } from 'lucide-react';
 import Image from 'next/image';
 
 interface Listing {
@@ -44,19 +45,20 @@ export default function MyListingsPage() {
     const router = useRouter();
     const { user, loading: authLoading, logout } = useAuth();
     const isAuthenticated = !!user;
-    
+
     const [listings, setListings] = useState<Listing[]>([]);
     const [purchasedListings, setPurchasedListings] = useState<Listing[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
-    
+
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [listingToDelete, setListingToDelete] = useState<string | null>(null);
     const [isSellModalOpen, setIsSellModalOpen] = useState(false);
-    
+    const [isChangePasswordOpen, setIsChangePasswordOpen] = useState(false);
+
     const [isSoldExpanded, setIsSoldExpanded] = useState(false);
     const [isPurchasedExpanded, setIsPurchasedExpanded] = useState(false);
-    
+
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -78,13 +80,13 @@ export default function MyListingsPage() {
                 getPendingOffers(),
                 getPurchasedListings()
             ]);
-            
+
             // Map offers to listings
             const listingsWithOffers = listingsData.map((listing: Listing) => {
                 const listingOffers = offersData.filter((offer: PendingOffer) => offer.listing_id === listing.id);
                 return { ...listing, pendingOffers: listingOffers };
             });
-            
+
             setListings(listingsWithOffers);
             setPurchasedListings(purchasedData);
         } catch (err) {
@@ -242,10 +244,10 @@ export default function MyListingsPage() {
                         <div className={styles.avatarOverlay}>
                             <Camera size={24} />
                         </div>
-                        <input 
-                            type="file" 
-                            ref={fileInputRef} 
-                            style={{ display: 'none' }} 
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
                             onChange={handleFileChange}
                             accept="image/*"
                         />
@@ -254,12 +256,19 @@ export default function MyListingsPage() {
                         <h2>{user?.full_name || 'Set Your Name'}</h2>
                         <p>{user?.email}</p>
                         <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-                            <button 
+                            <button
                                 onClick={logout}
                                 className={styles.cancelButton}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 16px', fontSize: '13px' }}
                             >
                                 <LogOut size={14} /> Logout
+                            </button>
+                            <button
+                                onClick={() => setIsChangePasswordOpen(true)}
+                                className={styles.cancelButton}
+                                style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 16px', fontSize: '13px' }}
+                            >
+                                <KeyRound size={14} /> Change Password
                             </button>
                         </div>
                     </div>
@@ -272,7 +281,7 @@ export default function MyListingsPage() {
                     <Package size={20} />
                     Active Listings ({activeListings.length})
                 </div>
-                
+
                 {activeListings.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--vandy-grey)', backgroundColor: 'white', borderRadius: '16px', border: '1px dashed var(--vandy-sand)' }}>
                         You don&apos;t have any items currently listed.
@@ -405,12 +414,12 @@ export default function MyListingsPage() {
                 </div>
             </div>
 
-            <DeleteModal 
-                isOpen={deleteModalOpen} 
-                onClose={() => setDeleteModalOpen(false)} 
-                onConfirm={confirmDelete} 
+            <DeleteModal
+                isOpen={deleteModalOpen}
+                onClose={() => setDeleteModalOpen(false)}
+                onConfirm={confirmDelete}
             />
-            
+
             {isSellModalOpen && (
                 <ListingModal
                     isOpen={isSellModalOpen}
@@ -421,8 +430,13 @@ export default function MyListingsPage() {
                     }}
                 />
             )}
-            
+
             <BottomNav />
+
+            <ChangePasswordModal
+                isOpen={isChangePasswordOpen}
+                onClose={() => setIsChangePasswordOpen(false)}
+            />
         </div>
     );
 }
