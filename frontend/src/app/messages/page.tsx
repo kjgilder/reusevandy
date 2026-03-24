@@ -6,6 +6,7 @@ import BottomNav from '../../components/BottomNav';
 import { Search, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
 import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer, confirmTransaction, cancelListing } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
+import ProductDetailModal from '../../components/ProductDetailModal';
 import styles from './page.module.css';
 
 interface UserParticipant {
@@ -19,10 +20,14 @@ interface Conversation {
     listing: {
         id: string;
         title: string;
+        description: string;
         price: number;
+        category: string;
+        images?: string[];
         status: string;
         seller_confirmed_sold: boolean;
         buyer_confirmed_sold: boolean;
+        created_at: string;
     };
     buyer: UserParticipant;
     seller: UserParticipant;
@@ -58,6 +63,7 @@ export default function MessagesPage() {
     const [filter, setFilter] = useState<'active' | 'past'>('active');
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
     
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -235,6 +241,22 @@ export default function MessagesPage() {
         return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     };
 
+    const getTimeAgo = (dateString: string) => {
+        if (!dateString) return "Just now";
+        const safeDateString = dateString.endsWith('Z') ? dateString : dateString + 'Z';
+        const date = new Date(safeDateString);
+        const now = new Date();
+        const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+        if (seconds <= 0) return "Just now";
+        let interval = seconds / 86400;
+        if (interval >= 1) return Math.floor(interval) + " days ago";
+        interval = seconds / 3600;
+        if (interval >= 1) return Math.floor(interval) + " hours ago";
+        interval = seconds / 60;
+        if (interval >= 1) return Math.floor(interval) + " mins ago";
+        return "Just now";
+    };
+
     if (!user) return null;
 
     return (
@@ -372,7 +394,11 @@ export default function MessagesPage() {
                                                         <span className={`${styles.statusBadge} ${styles.statusSold}`}>Sold</span>
                                                     )}
                                                 </div>
-                                                <p className={styles.listingInfo} style={{ color: '#6b7280' }}>
+                                                <p 
+                                                    className={styles.listingInfo} 
+                                                    style={{ color: 'var(--vandy-gold)', cursor: 'pointer', fontWeight: 'bold' }}
+                                                    onClick={() => setIsDetailModalOpen(true)}
+                                                >
                                                     {activeConversation.listing.title} • ${activeConversation.listing.price}
                                                 </p>
                                             </div>
@@ -563,6 +589,23 @@ export default function MessagesPage() {
                     )}
                 </div>
             </main>
+
+            {activeConversation && isDetailModalOpen && (
+                <ProductDetailModal
+                    isOpen={isDetailModalOpen}
+                    onClose={() => setIsDetailModalOpen(false)}
+                    listing={{
+                        ...activeConversation.listing,
+                        image: activeConversation.listing.images && activeConversation.listing.images.length > 0 ? activeConversation.listing.images[0] : undefined,
+                        timeAgo: getTimeAgo(activeConversation.listing.created_at)
+                    }}
+                    onListingDeleted={() => {
+                        setIsDetailModalOpen(false);
+                    }}
+                    hideActions={true}
+                />
+            )}
+
             <BottomNav />
             <style jsx>{`
                 @keyframes spin {

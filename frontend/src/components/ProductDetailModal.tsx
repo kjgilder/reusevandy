@@ -26,9 +26,10 @@ interface ProductDetailModalProps {
         timeAgo: string;
     } | null;
     onListingDeleted?: () => void;
+    hideActions?: boolean;
 }
 
-export default function ProductDetailModal({ isOpen, onClose, listing, onListingDeleted }: ProductDetailModalProps) {
+export default function ProductDetailModal({ isOpen, onClose, listing, onListingDeleted, hideActions = false }: ProductDetailModalProps) {
     const { user } = useAuth();
     const router = useRouter();
     const [offerAmount, setOfferAmount] = useState<string>('');
@@ -232,6 +233,7 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                     </div>
 
                     {/* Actions Panel */}
+                    {!hideActions && (
                     <div style={{ marginTop: '28px' }}>
                         {isOwner ? (
                             <div style={{ display: 'flex', gap: '16px' }}>
@@ -390,6 +392,7 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                             </div>
                         )}
                     </div>
+                    )}
                 </div>
             </div>
 
