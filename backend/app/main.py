@@ -54,10 +54,19 @@ app.include_router(
     messages.router, prefix=f"{settings.API_V1_STR}/messages", tags=["messages"]
 )
 
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+if os.getenv("FRONTEND_URL"):
+    origins.append(os.getenv("FRONTEND_URL"))
+
 # Set all CORS enabled origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend URL
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Allow Vercel preview URLs
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
