@@ -57,6 +57,7 @@ app.include_router(
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://100.100.75.136:3000",
 ]
 
 if os.getenv("FRONTEND_URL"):

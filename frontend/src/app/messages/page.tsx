@@ -3,7 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNav from '../../components/BottomNav';
-import { Search, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Search, Send, CheckCircle2, XCircle, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer, confirmTransaction, cancelListing, BASE_URL } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
@@ -60,6 +60,7 @@ export default function MessagesPage() {
     const [loadingConversations, setLoadingConversations] = useState(true);
     const [transactionStatus, setTransactionStatus] = useState<string | null>(null);
     const [transacting, setTransacting] = useState(false);
+    const closingRef = useRef(false);
     
     // Filters
     const [role, setRole] = useState<'buying' | 'selling' | undefined>(undefined);
@@ -103,7 +104,9 @@ export default function MessagesPage() {
                     if (targetConvId) {
                         const target = data.find((c: Conversation) => c.id === targetConvId);
                         setActiveConversation(target || data[0]);
-                    } else {
+                    } else if (window.innerWidth > 768) {
+                        // Only auto-select the first conversation on desktop
+                        // On mobile, we want to stay in the list view
                         setActiveConversation(data[0]);
                     }
                 }
@@ -265,7 +268,7 @@ export default function MessagesPage() {
     return (
         <div className={styles.pageContainer}>
             <main className={styles.messagesMain}>
-                <div className={styles.sidebar}>
+                <div className={`${styles.sidebar} ${!activeConversation ? styles.showMobile : ''}`}>
                     <div className={styles.sidebarHeader}>
                         <h1>Messages</h1>
                         <div className={styles.filterTabs}>
@@ -345,7 +348,10 @@ export default function MessagesPage() {
                                                 <div 
                                                     key={conv.id} 
                                                     className={`${styles.conversationItem} ${activeConversation?.id === conv.id ? styles.active : ''}`}
-                                                    onClick={() => setActiveConversation(conv)}
+                                                    onClick={() => {
+                                                        if (closingRef.current) return;
+                                                        setActiveConversation(conv);
+                                                    }}
                                                 >
                                                     <div className={styles.avatar}>
                                                         {otherParticipant.profile_picture ? (
@@ -385,10 +391,24 @@ export default function MessagesPage() {
                     </div>
                 </div>
 
-                <div className={styles.chatArea}>
+                <div className={`${styles.chatArea} ${activeConversation ? styles.showMobile : ''}`}>
                     {activeConversation ? (
                         <>
                             <div className={styles.chatHeader}>
+                                <button 
+                                    className={styles.backButton} 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        closingRef.current = true;
+                                        setActiveConversation(null);
+                                        setTimeout(() => {
+                                            closingRef.current = false;
+                                        }, 400); // Standard mobile click delay
+                                    }}
+                                >
+                                    <ArrowLeft size={20} />
+                                </button>
                                 {(() => {
                                     const isUserBuyer = activeConversation.buyer.id === user.id;
                                     const otherParticipant = isUserBuyer ? activeConversation.seller : activeConversation.buyer;

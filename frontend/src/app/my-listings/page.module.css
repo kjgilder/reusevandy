@@ -252,3 +252,52 @@
     background-color: #f3f4f6;
 }
 
+@media (max-width: 768px) {
+    .contentWrapper {
+        padding: 16px;
+    }
+    
+    .profileSection {
+        flex-direction: column;
+        padding: 24px 16px;
+        gap: 16px;
+        text-align: center;
+    }
+    
+    .avatarContainer {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto;
+    }
+    
+    .profileInfo h2 {
+        font-size: 20px;
+    }
+
+    .profileInfo p {
+        font-size: 14px;
+    }
+    
+    .listingsGrid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .sectionHeader {
+        font-size: 16px;
+        margin: 24px 0 16px 0;
+    }
+    
+    .accordionHeader {
+        padding: 16px;
+    }
+    
+    .accordionContent {
+        padding: 0 16px 16px 16px;
+    }
+
+    .pageTitle {
+        font-size: 24px;
+    }
+}
+
