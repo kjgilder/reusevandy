@@ -136,6 +136,7 @@ export interface UserParticipant {
   id: string;
   full_name: string;
   email: string;
+  profile_picture?: string;
 }
 
 export interface Conversation {

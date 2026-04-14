@@ -13,18 +13,23 @@ interface ProductCardProps {
     seller: string;
     sellerId?: string;
     sellerEmail?: string;
+    sellerProfilePicture?: string;
     timeAgo: string;
     category: string;
     onClick?: () => void;
 }
 
-export default function ProductCard({ title, description, price, images, image, seller, timeAgo, category, onClick }: ProductCardProps) {
+export default function ProductCard({ title, description, price, images, image, seller, sellerProfilePicture, timeAgo, category, onClick }: ProductCardProps) {
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const displayImages = (images && images.length > 0) ? images : (image ? [image] : []);
     const hasMultipleImages = displayImages.length > 1;
     
     const displayImage = displayImages.length > 0 ? displayImages[currentImageIndex] : null;
     const imageUrl = displayImage ? (displayImage.startsWith('http') ? displayImage : `${BASE_URL}${displayImage}`) : null;
+
+    const sellerProfilePictureUrl = sellerProfilePicture 
+        ? (sellerProfilePicture.startsWith('http') ? sellerProfilePicture : `${BASE_URL}${sellerProfilePicture}`) 
+        : null;
 
     const nextImage = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -169,7 +174,42 @@ export default function ProductCard({ title, description, price, images, image, 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--vandy-grey)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Seller</span>
-                        <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--vandy-black)' }}>{seller}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                            {sellerProfilePictureUrl ? (
+                                <div style={{ 
+                                    position: 'relative', 
+                                    width: '24px', 
+                                    height: '24px', 
+                                    borderRadius: '50%', 
+                                    overflow: 'hidden',
+                                    border: '1px solid var(--vandy-gold)'
+                                }}>
+                                    <Image 
+                                        src={sellerProfilePictureUrl} 
+                                        alt={seller} 
+                                        fill 
+                                        style={{ objectFit: 'cover' }}
+                                        sizes="24px"
+                                    />
+                                </div>
+                            ) : (
+                                <div style={{ 
+                                    width: '24px', 
+                                    height: '24px', 
+                                    borderRadius: '50%', 
+                                    backgroundColor: 'var(--vandy-gold)', 
+                                    color: 'var(--vandy-white)', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    fontSize: '10px', 
+                                    fontWeight: '800' 
+                                }}>
+                                    {seller.substring(0, 1).toUpperCase()}
+                                </div>
+                            )}
+                            <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--vandy-black)' }}>{seller}</span>
+                        </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
                         <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>

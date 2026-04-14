@@ -4,7 +4,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import BottomNav from '../../components/BottomNav';
 import { Search, Send, CheckCircle2, XCircle, Loader2 } from 'lucide-react';
-import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer, confirmTransaction, cancelListing } from '../../utils/api';
+import Image from 'next/image';
+import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer, confirmTransaction, cancelListing, BASE_URL } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import ProductDetailModal from '../../components/ProductDetailModal';
 import styles from './page.module.css';
@@ -13,6 +14,7 @@ interface UserParticipant {
     id: string;
     full_name: string;
     email: string;
+    profile_picture?: string;
 }
 
 interface Conversation {
@@ -28,6 +30,7 @@ interface Conversation {
         seller_confirmed_sold: boolean;
         buyer_confirmed_sold: boolean;
         created_at: string;
+        seller: UserParticipant;
     };
     buyer: UserParticipant;
     seller: UserParticipant;
@@ -345,7 +348,19 @@ export default function MessagesPage() {
                                                     onClick={() => setActiveConversation(conv)}
                                                 >
                                                     <div className={styles.avatar}>
-                                                        {getInitials(otherParticipant.full_name, otherParticipant.email)}
+                                                        {otherParticipant.profile_picture ? (
+                                                            <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden' }}>
+                                                                <Image 
+                                                                    src={otherParticipant.profile_picture.startsWith('http') ? otherParticipant.profile_picture : `${BASE_URL}${otherParticipant.profile_picture}`} 
+                                                                    alt={participantName} 
+                                                                    fill 
+                                                                    style={{ objectFit: 'cover' }}
+                                                                    sizes="40px"
+                                                                />
+                                                            </div>
+                                                        ) : (
+                                                            getInitials(otherParticipant.full_name, otherParticipant.email)
+                                                        )}
                                                     </div>
                                                     <div className={styles.conversationDetails}>
                                                         <div className={styles.conversationHeader}>
@@ -382,7 +397,19 @@ export default function MessagesPage() {
                                     return (
                                         <>
                                             <div className={styles.avatar}>
-                                                {getInitials(otherParticipant.full_name, otherParticipant.email)}
+                                                {otherParticipant.profile_picture ? (
+                                                    <div style={{ position: 'relative', width: '100%', height: '100%', borderRadius: '50%', overflow: 'hidden' }}>
+                                                        <Image 
+                                                            src={otherParticipant.profile_picture.startsWith('http') ? otherParticipant.profile_picture : `${BASE_URL}${otherParticipant.profile_picture}`} 
+                                                            alt={participantName} 
+                                                            fill 
+                                                            style={{ objectFit: 'cover' }}
+                                                            sizes="40px"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    getInitials(otherParticipant.full_name, otherParticipant.email)
+                                                )}
                                             </div>
                                             <div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>

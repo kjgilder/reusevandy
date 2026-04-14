@@ -24,6 +24,7 @@ interface Listing {
         id?: string;
         full_name?: string;
         email?: string;
+        profile_picture?: string;
     };
     timeAgo?: string;
     created_at: string;
@@ -164,6 +165,7 @@ export default function HomePage() {
                                 seller={listing.seller?.full_name || listing.seller?.email || 'Unknown Seller'}
                                 sellerId={listing.seller?.id}
                                 sellerEmail={listing.seller?.email}
+                                sellerProfilePicture={listing.seller?.profile_picture}
                                 timeAgo={getTimeAgo(listing.created_at)}
                                 category={listing.category}
                                 image={listing.images && listing.images.length > 0 ? listing.images[0] : undefined}
