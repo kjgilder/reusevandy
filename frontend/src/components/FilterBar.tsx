@@ -13,7 +13,7 @@ export default function FilterBar({ selectedCategory, onSelectCategory }: Filter
             display: 'flex',
             gap: '8px',
             overflowX: 'auto',
-            padding: '12px 24px',
+            padding: '12px 12px 12px 24px',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none'
         }}>

@@ -8,7 +8,7 @@ import FilterBar from '../../components/FilterBar';
 import ProductCard from '../../components/ProductCard';
 import ListingModal from '../../components/ListingModal';
 import ProductDetailModal from '../../components/ProductDetailModal';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, LayoutList, LayoutGrid } from 'lucide-react';
 import { getListings } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import styles from '../page.module.css';
@@ -37,6 +37,7 @@ export default function HomePage() {
     const [detailModalItem, setDetailModalItem] = useState<Listing | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const { user } = useAuth();
     const router = useRouter();
 
@@ -130,12 +131,24 @@ export default function HomePage() {
                         className={styles.searchInput}
                     />
                 </div>
-
-                {/* Filters */}
-                <div style={{ marginBottom: '24px' }}>
-                    <div style={{ marginBottom: '24px' }}>
-                        <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+                
+                {/* Filters & View Toggle */}
+                <div className={styles.filterRow}>
+                    <div className={styles.viewToggleContainer}>
+                        <button 
+                            className={`${styles.viewToggleButton} ${viewMode === 'list' ? styles.active : ''}`}
+                            onClick={() => setViewMode('list')}
+                        >
+                            <LayoutList size={20} />
+                        </button>
+                        <button 
+                            className={`${styles.viewToggleButton} ${viewMode === 'grid' ? styles.active : ''}`}
+                            onClick={() => setViewMode('grid')}
+                        >
+                            <LayoutGrid size={20} />
+                        </button>
                     </div>
+                    <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
                 </div>
 
                 {/* Product Grid */}
@@ -150,10 +163,10 @@ export default function HomePage() {
                         `}</style>
                     </div>
                 ) : (
-                    <div style={{
+                    <div className={viewMode === 'list' ? styles.listMode : styles.gridMode} style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                        gap: '24px'
+                        gridTemplateColumns: viewMode === 'list' ? 'repeat(auto-fill, minmax(280px, 1fr))' : undefined,
+                        gap: viewMode === 'list' ? '24px' : undefined
                     }}>
                         {listings.map(listing => (
                             <ProductCard
@@ -162,6 +175,7 @@ export default function HomePage() {
                                 title={listing.title}
                                 price={listing.price}
                                 description={listing.description}
+                                viewMode={viewMode}
                                 seller={listing.seller?.full_name || listing.seller?.email || 'Unknown Seller'}
                                 sellerId={listing.seller?.id}
                                 sellerEmail={listing.seller?.email}

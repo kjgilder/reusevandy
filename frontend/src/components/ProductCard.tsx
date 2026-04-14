@@ -16,10 +16,12 @@ interface ProductCardProps {
     sellerProfilePicture?: string;
     timeAgo: string;
     category: string;
+    viewMode?: 'list' | 'grid';
     onClick?: () => void;
 }
 
-export default function ProductCard({ title, description, price, images, image, seller, sellerProfilePicture, timeAgo, category, onClick }: ProductCardProps) {
+export default function ProductCard({ title, description, price, images, image, seller, sellerProfilePicture, timeAgo, category, viewMode = 'list', onClick }: ProductCardProps) {
+    const isGrid = viewMode === 'grid';
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const displayImages = (images && images.length > 0) ? images : (image ? [image] : []);
     const hasMultipleImages = displayImages.length > 1;
@@ -72,7 +74,7 @@ export default function ProductCard({ title, description, price, images, image, 
             }}
         >
             <div style={{
-                height: '210px',
+                height: isGrid ? '110px' : '210px',
                 backgroundColor: 'var(--vandy-cream)',
                 position: 'relative',
                 overflow: 'hidden'
@@ -91,7 +93,7 @@ export default function ProductCard({ title, description, price, images, image, 
                     </div>
                 )}
 
-                {hasMultipleImages && (
+                {!isGrid && hasMultipleImages && (
                     <>
                         <button 
                             onClick={prevImage}
@@ -147,76 +149,87 @@ export default function ProductCard({ title, description, price, images, image, 
                     letterSpacing: '0.05em'
                 }}>{category}</span>
             </div>
-            <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                    <h3 style={{ 
-                        fontFamily: 'Outfit, sans-serif',
-                        fontSize: '16px', 
-                        fontWeight: '700', 
-                        margin: 0, 
-                        flex: 1, 
-                        color: 'var(--vandy-black)',
-                        lineHeight: '1.4'
-                    }}>{title}</h3>
-                </div>
-                <p style={{ 
-                    fontSize: '13px', 
-                    color: 'var(--vandy-grey)', 
-                    margin: 0, 
-                    lineHeight: '1.5', 
-                    height: '40px', 
-                    overflow: 'hidden', 
-                    display: '-webkit-box', 
-                    WebkitLineClamp: 2, 
-                    WebkitBoxOrient: 'vertical' 
-                }}>{description}</p>
-                
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column' }}>
-                        <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--vandy-grey)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Seller</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                            {sellerProfilePictureUrl ? (
-                                <div style={{ 
-                                    position: 'relative', 
-                                    width: '24px', 
-                                    height: '24px', 
-                                    borderRadius: '50%', 
-                                    overflow: 'hidden',
-                                    border: '1px solid var(--vandy-gold)'
-                                }}>
-                                    <Image 
-                                        src={sellerProfilePictureUrl} 
-                                        alt={seller} 
-                                        fill 
-                                        style={{ objectFit: 'cover' }}
-                                        sizes="24px"
-                                    />
+                <div style={{ padding: isGrid ? '8px' : '16px', display: 'flex', flexDirection: 'column', gap: isGrid ? '4px' : '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                        <h3 style={{ 
+                            fontFamily: 'Outfit, sans-serif',
+                            fontSize: isGrid ? '12px' : '16px', 
+                            fontWeight: '700', 
+                            margin: 0, 
+                            flex: 1, 
+                            color: 'var(--vandy-black)',
+                            lineHeight: '1.2',
+                            height: isGrid ? '28px' : 'auto',
+                            overflow: 'hidden',
+                            display: '-webkit-box',
+                            WebkitLineClamp: isGrid ? 2 : 'unset',
+                            WebkitBoxOrient: 'vertical'
+                        }}>{title}</h3>
+                    </div>
+                    {!isGrid && (
+                        <p style={{ 
+                            fontSize: '13px', 
+                            color: 'var(--vandy-grey)', 
+                            margin: 0, 
+                            lineHeight: '1.5', 
+                            height: '40px', 
+                            overflow: 'hidden', 
+                            display: '-webkit-box', 
+                            WebkitLineClamp: 2, 
+                            WebkitBoxOrient: 'vertical' 
+                        }}>{description}</p>
+                    )}
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: isGrid ? '4px' : '12px' }}>
+                        {!isGrid ? (
+                            <div style={{ display: 'flex', flexDirection: 'column' }}>
+                                <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--vandy-grey)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Seller</span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                                    {sellerProfilePictureUrl ? (
+                                        <div style={{ 
+                                            position: 'relative', 
+                                            width: '24px', 
+                                            height: '24px', 
+                                            borderRadius: '50%', 
+                                            overflow: 'hidden',
+                                            border: '1px solid var(--vandy-gold)'
+                                        }}>
+                                            <Image 
+                                                src={sellerProfilePictureUrl} 
+                                                alt={seller} 
+                                                fill 
+                                                style={{ objectFit: 'cover' }}
+                                                sizes="24px"
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div style={{ 
+                                            width: '24px', 
+                                            height: '24px', 
+                                            borderRadius: '50%', 
+                                            backgroundColor: 'var(--vandy-gold)', 
+                                            color: 'var(--vandy-white)', 
+                                            display: 'flex', 
+                                            alignItems: 'center', 
+                                            justifyContent: 'center', 
+                                            fontSize: '10px', 
+                                            fontWeight: '800' 
+                                        }}>
+                                            {seller.substring(0, 1).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--vandy-black)' }}>{seller}</span>
                                 </div>
-                            ) : (
-                                <div style={{ 
-                                    width: '24px', 
-                                    height: '24px', 
-                                    borderRadius: '50%', 
-                                    backgroundColor: 'var(--vandy-gold)', 
-                                    color: 'var(--vandy-white)', 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
-                                    justifyContent: 'center', 
-                                    fontSize: '10px', 
-                                    fontWeight: '800' 
-                                }}>
-                                    {seller.substring(0, 1).toUpperCase()}
-                                </div>
-                            )}
-                            <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--vandy-black)' }}>{seller}</span>
+                            </div>
+                        ) : (
+                            <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>
+                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span style={{ fontSize: isGrid ? '14px' : '18px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>
+                            {!isGrid && <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>}
                         </div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                        <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>
-                        <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>
-                    </div>
                 </div>
-            </div>
         </div>
     );
 }

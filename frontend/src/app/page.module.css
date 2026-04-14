@@ -157,7 +157,55 @@
 
 .searchContainer {
   position: relative;
+  margin-bottom: 16px;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
   margin-bottom: 24px;
+}
+
+.viewToggleContainer {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f1f1;
+  padding: 4px;
+  border-radius: 10px;
+  margin-left: 24px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .filterRow {
+    gap: 0;
+    margin-bottom: 16px;
+  }
+  
+  .viewToggleContainer {
+    display: flex;
+    margin-left: 16px;
+  }
+}
+
+.viewToggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--vandy-grey);
+  transition: all 0.2s;
+}
+
+.viewToggleButton.active {
+  background-color: var(--vandy-white);
+  color: var(--vandy-gold);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .searchInput {
@@ -289,5 +337,17 @@
   .searchInput {
     padding: 14px 14px 14px 44px;
     font-size: 15px;
+  }
+
+  .listMode {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .gridMode {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }
