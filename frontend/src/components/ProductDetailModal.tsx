@@ -22,6 +22,7 @@ interface ProductDetailModalProps {
             id?: string;
             full_name?: string;
             email?: string;
+            profile_picture?: string;
         };
         timeAgo: string;
     } | null;
@@ -227,8 +228,43 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                         </div>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', color: '#6b7280', fontSize: '14px', marginTop: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-                        <span>Seller: <strong style={{ color: 'var(--vandy-black)' }}>{listing.seller?.full_name || listing.seller?.email || 'Unknown'}</strong></span>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#6b7280', fontSize: '14px', marginTop: '24px', paddingBottom: '24px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            {listing.seller?.profile_picture ? (
+                                <div style={{ 
+                                    position: 'relative', 
+                                    width: '32px', 
+                                    height: '32px', 
+                                    borderRadius: '50%', 
+                                    overflow: 'hidden',
+                                    border: '1px solid var(--vandy-gold)'
+                                }}>
+                                    <Image 
+                                        src={listing.seller.profile_picture.startsWith('http') ? listing.seller.profile_picture : `${BASE_URL}${listing.seller.profile_picture}`} 
+                                        alt={listing.seller.full_name || 'Seller'} 
+                                        fill 
+                                        style={{ objectFit: 'cover' }}
+                                        sizes="32px"
+                                    />
+                                </div>
+                            ) : (
+                                <div style={{ 
+                                    width: '32px', 
+                                    height: '32px', 
+                                    borderRadius: '50%', 
+                                    backgroundColor: 'var(--vandy-gold)', 
+                                    color: 'white', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'center', 
+                                    fontWeight: '800',
+                                    fontSize: '12px'
+                                }}>
+                                    {(listing.seller?.full_name || listing.seller?.email || '?').substring(0, 1).toUpperCase()}
+                                </div>
+                            )}
+                            <span>Seller: <strong style={{ color: 'var(--vandy-black)' }}>{listing.seller?.full_name || listing.seller?.email || 'Unknown'}</strong></span>
+                        </div>
                         <span>Listed {listing.timeAgo}</span>
                     </div>
 
