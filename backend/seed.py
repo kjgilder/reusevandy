@@ -1,6 +1,6 @@
 import asyncio
 import random
-from typing import List
+
 
 from motor.motor_asyncio import AsyncIOMotorClient
 from beanie import init_beanie
@@ -122,7 +122,7 @@ async def seed_db():
                 reply = Message(
                     conversation=convo,
                     sender=listing.seller,
-                    content=f"Yes, it is! When can you pick it up?"
+                    content="Yes, it is! When can you pick it up?"
                 )
                 await reply.insert()
                 listing.message_count += 1
