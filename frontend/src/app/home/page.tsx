@@ -8,7 +8,7 @@ import FilterBar from '../../components/FilterBar';
 import ProductCard from '../../components/ProductCard';
 import ListingModal from '../../components/ListingModal';
 import ProductDetailModal from '../../components/ProductDetailModal';
-import { Search, Loader2, LayoutGrid, List } from 'lucide-react';
+import { Search, Loader2, LayoutList, LayoutGrid } from 'lucide-react';
 import { getListings } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import styles from '../page.module.css';
@@ -131,28 +131,24 @@ export default function HomePage() {
                         className={styles.searchInput}
                     />
                 </div>
-
+                
                 {/* Filters & View Toggle */}
-                <div style={{ marginBottom: '24px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                        <div style={{ flex: 1 }}>
-                            <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
-                        </div>
-                        <div className={styles.viewToggleContainer}>
-                            <button 
-                                className={`${styles.viewToggleButton} ${viewMode === 'list' ? styles.activeToggle : ''}`}
-                                onClick={() => setViewMode('list')}
-                            >
-                                <List size={20} />
-                            </button>
-                            <button 
-                                className={`${styles.viewToggleButton} ${viewMode === 'grid' ? styles.activeToggle : ''}`}
-                                onClick={() => setViewMode('grid')}
-                            >
-                                <LayoutGrid size={20} />
-                            </button>
-                        </div>
+                <div className={styles.filterRow}>
+                    <div className={styles.viewToggleContainer}>
+                        <button 
+                            className={`${styles.viewToggleButton} ${viewMode === 'list' ? styles.active : ''}`}
+                            onClick={() => setViewMode('list')}
+                        >
+                            <LayoutList size={20} />
+                        </button>
+                        <button 
+                            className={`${styles.viewToggleButton} ${viewMode === 'grid' ? styles.active : ''}`}
+                            onClick={() => setViewMode('grid')}
+                        >
+                            <LayoutGrid size={20} />
+                        </button>
                     </div>
+                    <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
                 </div>
 
                 {/* Product Grid */}
@@ -167,14 +163,11 @@ export default function HomePage() {
                         `}</style>
                     </div>
                 ) : (
-                    <div 
-                        className={viewMode === 'grid' ? styles.mobileGrid3 : ''}
-                        style={{
-                            display: 'grid',
-                            gridTemplateColumns: viewMode === 'grid' ? 'repeat(3, 1fr)' : 'repeat(auto-fill, minmax(280px, 1fr))',
-                            gap: viewMode === 'grid' ? '8px' : '24px'
-                        }}
-                    >
+                    <div className={viewMode === 'list' ? styles.listMode : styles.gridMode} style={{
+                        display: 'grid',
+                        gridTemplateColumns: viewMode === 'list' ? 'repeat(auto-fill, minmax(280px, 1fr))' : undefined,
+                        gap: viewMode === 'list' ? '24px' : undefined
+                    }}>
                         {listings.map(listing => (
                             <ProductCard
                                 key={listing.id}
@@ -182,6 +175,7 @@ export default function HomePage() {
                                 title={listing.title}
                                 price={listing.price}
                                 description={listing.description}
+                                viewMode={viewMode}
                                 seller={listing.seller?.full_name || listing.seller?.email || 'Unknown Seller'}
                                 sellerId={listing.seller?.id}
                                 sellerEmail={listing.seller?.email}
@@ -190,7 +184,6 @@ export default function HomePage() {
                                 category={listing.category}
                                 image={listing.images && listing.images.length > 0 ? listing.images[0] : undefined}
                                 images={listing.images}
-                                viewMode={viewMode}
                                 onClick={() => {
                                     if (!user) {
                                         router.push('/login');

@@ -157,7 +157,55 @@
 
 .searchContainer {
   position: relative;
+  margin-bottom: 16px;
+}
+
+.filterRow {
+  display: flex;
+  align-items: center;
   margin-bottom: 24px;
+}
+
+.viewToggleContainer {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  background-color: #f1f1f1;
+  padding: 4px;
+  border-radius: 10px;
+  margin-left: 24px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .filterRow {
+    gap: 0;
+    margin-bottom: 16px;
+  }
+  
+  .viewToggleContainer {
+    display: flex;
+    margin-left: 16px;
+  }
+}
+
+.viewToggleButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--vandy-grey);
+  transition: all 0.2s;
+}
+
+.viewToggleButton.active {
+  background-color: var(--vandy-white);
+  color: var(--vandy-gold);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .searchInput {
@@ -176,37 +224,6 @@
   outline: none;
   border-color: var(--vandy-gold);
   box-shadow: var(--shadow-md);
-}
-
-.viewToggleContainer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.viewToggleButton {
-  background: white;
-  border: 1px solid var(--vandy-sand);
-  border-radius: 8px;
-  padding: 8px;
-  cursor: pointer;
-  color: var(--vandy-grey);
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.activeToggle {
-  background: var(--vandy-black);
-  color: var(--vandy-gold);
-  border-color: var(--vandy-black);
-}
-
-.mobileGrid3 {
-  grid-template-columns: repeat(3, 1fr) !important;
-  gap: 8px !important;
 }
 
 .main {
@@ -322,14 +339,15 @@
     font-size: 15px;
   }
 
-  .viewToggleContainer {
-    display: flex; /* Only show toggle on mobile if desired, or keep it visible on desktop */
-    margin-bottom: 16px;
+  .listMode {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
-}
 
-@media (min-width: 769px) {
-  .viewToggleContainer {
-    display: none; /* Hide toggle on desktop as it's not needed */
+  .gridMode {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
   }
 }

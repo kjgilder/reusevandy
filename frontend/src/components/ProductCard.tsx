@@ -16,11 +16,11 @@ interface ProductCardProps {
     sellerProfilePicture?: string;
     timeAgo: string;
     category: string;
-    onClick?: () => void;
     viewMode?: 'list' | 'grid';
+    onClick?: () => void;
 }
 
-export default function ProductCard({ title, description, price, images, image, seller, sellerProfilePicture, timeAgo, category, onClick, viewMode = 'list' }: ProductCardProps) {
+export default function ProductCard({ title, description, price, images, image, seller, sellerProfilePicture, timeAgo, category, viewMode = 'list', onClick }: ProductCardProps) {
     const isGrid = viewMode === 'grid';
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const displayImages = (images && images.length > 0) ? images : (image ? [image] : []);
@@ -74,7 +74,7 @@ export default function ProductCard({ title, description, price, images, image, 
             }}
         >
             <div style={{
-                height: isGrid ? '120px' : '210px',
+                height: isGrid ? '110px' : '210px',
                 backgroundColor: 'var(--vandy-cream)',
                 position: 'relative',
                 overflow: 'hidden'
@@ -93,7 +93,7 @@ export default function ProductCard({ title, description, price, images, image, 
                     </div>
                 )}
 
-                {hasMultipleImages && (
+                {!isGrid && hasMultipleImages && (
                     <>
                         <button 
                             onClick={prevImage}
@@ -133,43 +133,40 @@ export default function ProductCard({ title, description, price, images, image, 
                     </>
                 )}
 
-                {!isGrid && (
-                    <span style={{
-                        position: 'absolute',
-                        top: '12px',
-                        right: '12px',
-                        backgroundColor: 'rgba(28, 28, 28, 0.8)',
-                        backdropFilter: 'blur(4px)',
-                        padding: '4px 10px',
-                        borderRadius: '20px',
-                        fontSize: '11px',
-                        fontWeight: '700',
-                        color: 'var(--vandy-gold)',
-                        zIndex: 1,
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.05em'
-                    }}>{category}</span>
-                )}
+                <span style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    backgroundColor: 'rgba(28, 28, 28, 0.8)',
+                    backdropFilter: 'blur(4px)',
+                    padding: '4px 10px',
+                    borderRadius: '20px',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    color: 'var(--vandy-gold)',
+                    zIndex: 1,
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                }}>{category}</span>
             </div>
-            <div style={{ padding: isGrid ? '8px' : '16px', display: 'flex', flexDirection: 'column', gap: isGrid ? '4px' : '8px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                    <h3 style={{ 
-                        fontFamily: 'Outfit, sans-serif',
-                        fontSize: isGrid ? '11px' : '16px', 
-                        fontWeight: '700', 
-                        margin: 0, 
-                        flex: 1, 
-                        color: 'var(--vandy-black)',
-                        lineHeight: '1.2',
-                        maxHeight: isGrid ? '2.4em' : 'none',
-                        overflow: 'hidden',
-                        display: '-webkit-box',
-                        WebkitLineClamp: isGrid ? 2 : 'none',
-                        WebkitBoxOrient: 'vertical'
-                    }}>{title}</h3>
-                </div>
-                {!isGrid && (
-                    <>
+                <div style={{ padding: isGrid ? '8px' : '16px', display: 'flex', flexDirection: 'column', gap: isGrid ? '4px' : '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
+                        <h3 style={{ 
+                            fontFamily: 'Outfit, sans-serif',
+                            fontSize: isGrid ? '12px' : '16px', 
+                            fontWeight: '700', 
+                            margin: 0, 
+                            flex: 1, 
+                            color: 'var(--vandy-black)',
+                            lineHeight: '1.2',
+                            height: isGrid ? '28px' : 'auto',
+                            overflow: 'hidden',
+                            display: '-webkit-box',
+                            WebkitLineClamp: isGrid ? 2 : 'unset',
+                            WebkitBoxOrient: 'vertical'
+                        }}>{title}</h3>
+                    </div>
+                    {!isGrid && (
                         <p style={{ 
                             fontSize: '13px', 
                             color: 'var(--vandy-grey)', 
@@ -181,8 +178,10 @@ export default function ProductCard({ title, description, price, images, image, 
                             WebkitLineClamp: 2, 
                             WebkitBoxOrient: 'vertical' 
                         }}>{description}</p>
-                        
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '12px' }}>
+                    )}
+                    
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: isGrid ? '4px' : '12px' }}>
+                        {!isGrid ? (
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                                 <span style={{ fontSize: '11px', fontWeight: '600', color: 'var(--vandy-grey)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Seller</span>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
@@ -222,20 +221,15 @@ export default function ProductCard({ title, description, price, images, image, 
                                     <span style={{ fontSize: '13px', fontWeight: '500', color: 'var(--vandy-black)' }}>{seller}</span>
                                 </div>
                             </div>
-                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                                <span style={{ fontSize: '18px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>
-                                <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>
-                            </div>
+                        ) : (
+                            <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>
+                        )}
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                            <span style={{ fontSize: isGrid ? '14px' : '18px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>
+                            {!isGrid && <span style={{ fontSize: '10px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>}
                         </div>
-                    </>
-                )}
-                {isGrid && (
-                    <div style={{ marginTop: 'auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                         <span style={{ fontSize: '12px', fontWeight: '800', color: 'var(--vandy-black)' }}>${price}</span>
-                         <span style={{ fontSize: '8px', color: 'var(--vandy-grey)' }}>{timeAgo}</span>
                     </div>
-                )}
-            </div>
+                </div>
         </div>
     );
 }
