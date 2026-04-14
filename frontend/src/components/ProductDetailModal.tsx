@@ -112,7 +112,7 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
             <div style={{
                 backgroundColor: 'var(--vandy-cream)',
                 borderRadius: '20px',
-                width: '100%',
+                width: 'calc(100% - 32px)',
                 maxWidth: '550px',
                 maxHeight: '90vh',
                 overflowY: 'auto',
@@ -120,7 +120,8 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                 position: 'relative',
                 display: 'flex',
                 flexDirection: 'column',
-                border: '1px solid rgba(139, 125, 91, 0.2)'
+                border: '1px solid rgba(139, 125, 91, 0.2)',
+                margin: 'auto'
             }}>
                 <button
                     onClick={onClose}
@@ -145,7 +146,7 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                 </button>
 
                 {/* Carousel Container */}
-                <div style={{ height: '350px', width: '100%', position: 'relative', backgroundColor: '#1a1a1a', overflow: 'hidden' }}>
+                <div style={{ height: 'clamp(250px, 45vh, 350px)', width: '100%', position: 'relative', backgroundColor: '#1a1a1a', overflow: 'hidden' }}>
                     {images.length > 0 ? (
                         <>
                             <Image 
@@ -204,8 +205,9 @@ export default function ProductDetailModal({ isOpen, onClose, listing, onListing
                     )}
                 </div>
 
-                <div style={{ padding: '28px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                {/* Content Area */}
+                <div style={{ padding: 'clamp(16px, 4vw, 24px)', flex: 1 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
                         <div>
                             <span style={{
                                 backgroundColor: 'var(--vandy-black)',

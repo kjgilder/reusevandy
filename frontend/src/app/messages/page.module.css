@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile browsers */
     background-color: var(--vandy-cream);
 }
 
@@ -424,4 +425,93 @@
     background-color: #ef4444;
     border-radius: 50%;
     margin-left: 8px;
+}
+
+.backButton {
+    display: none;
+    background: none;
+    border: none;
+    padding: 10px; /* Better touch hit area */
+    cursor: pointer;
+    color: var(--vandy-grey);
+    margin-right: 4px;
+    z-index: 50;
+    -webkit-tap-highlight-color: transparent;
+}
+
+@media (max-width: 768px) {
+    .backButton {
+        display: block;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+        display: none;
+    }
+
+    .sidebar.showMobile {
+        display: flex;
+    }
+
+    .chatArea {
+        width: 100%;
+        display: none;
+    }
+
+    .chatArea.showMobile {
+        display: flex;
+    }
+
+    .messagesMain {
+        padding-bottom: 60px;
+    }
+
+    .sidebarHeader {
+        padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 16px;
+    }
+
+    .sidebarHeader h1 {
+        font-size: 20px;
+    }
+
+    .conversationItem {
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .chatHeader {
+        padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px;
+        gap: 8px;
+    }
+
+    .transactionActions {
+        display: none; /* Might need to move these or simplify on mobile */
+    }
+
+    .messageList {
+        padding: 16px;
+    }
+
+    .messageWrapper {
+        max-width: 90%;
+    }
+
+    .chatInputContainer {
+        padding: 12px 16px;
+    }
+
+    .offerBubble {
+        min-width: 100%;
+        padding: 12px;
+    }
+
+    .offerAmount {
+        font-size: 20px;
+    }
+
+    .messageBubble {
+        padding: 10px 14px;
+        font-size: 13px;
+    }
 }
