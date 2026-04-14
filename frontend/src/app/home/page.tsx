@@ -8,7 +8,7 @@ import FilterBar from '../../components/FilterBar';
 import ProductCard from '../../components/ProductCard';
 import ListingModal from '../../components/ListingModal';
 import ProductDetailModal from '../../components/ProductDetailModal';
-import { Search, Loader2 } from 'lucide-react';
+import { Search, Loader2, LayoutGrid, List } from 'lucide-react';
 import { getListings } from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import styles from '../page.module.css';
@@ -37,6 +37,7 @@ export default function HomePage() {
     const [detailModalItem, setDetailModalItem] = useState<Listing | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
+    const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const { user } = useAuth();
     const router = useRouter();
 
@@ -131,10 +132,26 @@ export default function HomePage() {
                     />
                 </div>
 
-                {/* Filters */}
+                {/* Filters & View Toggle */}
                 <div style={{ marginBottom: '24px' }}>
-                    <div style={{ marginBottom: '24px' }}>
-                        <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                        <div style={{ flex: 1 }}>
+                            <FilterBar selectedCategory={selectedCategory} onSelectCategory={setSelectedCategory} />
+                        </div>
+                        <div className={styles.viewToggleContainer}>
+                            <button 
+                                className={`${styles.viewToggleButton} ${viewMode === 'list' ? styles.activeToggle : ''}`}
+                                onClick={() => setViewMode('list')}
+                            >
+                                <List size={20} />
+                            </button>
+                            <button 
+                                className={`${styles.viewToggleButton} ${viewMode === 'grid' ? styles.activeToggle : ''}`}
+                                onClick={() => setViewMode('grid')}
+                            >
+                                <LayoutGrid size={20} />
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -150,11 +167,14 @@ export default function HomePage() {
                         `}</style>
                     </div>
                 ) : (
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                        gap: '24px'
-                    }}>
+                    <div 
+                        className={viewMode === 'grid' ? styles.mobileGrid3 : ''}
+                        style={{
+                            display: 'grid',
+                            gridTemplateColumns: viewMode === 'grid' ? 'repeat(3, 1fr)' : 'repeat(auto-fill, minmax(280px, 1fr))',
+                            gap: viewMode === 'grid' ? '8px' : '24px'
+                        }}
+                    >
                         {listings.map(listing => (
                             <ProductCard
                                 key={listing.id}
@@ -170,6 +190,7 @@ export default function HomePage() {
                                 category={listing.category}
                                 image={listing.images && listing.images.length > 0 ? listing.images[0] : undefined}
                                 images={listing.images}
+                                viewMode={viewMode}
                                 onClick={() => {
                                     if (!user) {
                                         router.push('/login');

@@ -178,6 +178,37 @@
   box-shadow: var(--shadow-md);
 }
 
+.viewToggleContainer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.viewToggleButton {
+  background: white;
+  border: 1px solid var(--vandy-sand);
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  color: var(--vandy-grey);
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activeToggle {
+  background: var(--vandy-black);
+  color: var(--vandy-gold);
+  border-color: var(--vandy-black);
+}
+
+.mobileGrid3 {
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 8px !important;
+}
+
 .main {
   text-align: center;
   display: flex;
@@ -289,5 +320,16 @@
   .searchInput {
     padding: 14px 14px 14px 44px;
     font-size: 15px;
+  }
+
+  .viewToggleContainer {
+    display: flex; /* Only show toggle on mobile if desired, or keep it visible on desktop */
+    margin-bottom: 16px;
+  }
+}
+
+@media (min-width: 769px) {
+  .viewToggleContainer {
+    display: none; /* Hide toggle on desktop as it's not needed */
   }
 }
