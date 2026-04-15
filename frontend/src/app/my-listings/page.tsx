@@ -228,7 +228,7 @@ export default function MyListingsPage() {
 
     if (authLoading || isLoading) {
         return (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: 'var(--vandy-cream)' }}>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100dvh', backgroundColor: 'var(--vandy-cream)' }}>
                 <div style={{ color: 'var(--vandy-gold)', fontWeight: 'bold' }}>Loading your profile...</div>
             </div>
         );

@@ -83,7 +83,7 @@ export default function HomePage() {
     };
 
     return (
-        <div style={{ minHeight: '100vh', backgroundColor: 'var(--vandy-cream)', paddingBottom: '80px' }}>
+        <div style={{ minHeight: '100dvh', backgroundColor: 'var(--vandy-cream)', paddingBottom: '100px' }}>
             <Navbar onSellClick={() => {
                 if (!user) {
                     router.push('/login');
