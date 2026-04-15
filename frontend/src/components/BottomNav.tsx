@@ -55,15 +55,27 @@ export default function BottomNav() {
             display: 'flex',
             justifyContent: 'space-around',
             alignItems: 'center',
-            padding: '12px 0',
-            backgroundColor: '#fff',
-            borderTop: '1px solid #eee',
+            padding: '12px 0 calc(12px + env(safe-area-inset-bottom))',
+            backgroundColor: 'var(--vandy-white)',
+            borderTop: '1px solid var(--vandy-sand)',
             position: 'fixed',
             bottom: 0,
             left: 0,
             right: 0,
-            zIndex: 100
+            zIndex: 100,
+            boxShadow: '0 -4px 12px rgba(0, 0, 0, 0.05)',
+            transition: 'background-color 0.3s ease'
         }}>
+            {/* Background bleed for mobile browser UI transitions */}
+            <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                height: '100px',
+                backgroundColor: 'var(--vandy-white)',
+                zIndex: -1
+            }} />
             <Link href="/home" style={getLinkStyle('/home')}>
                 <Home size={24} />
                 <span style={getTextStyle('/home')}>Browse</span>
