@@ -52,17 +52,19 @@ export default function BottomNav() {
 
     return (
         <nav style={{
-            display: 'flex',
+            display: (typeof window !== 'undefined' && window.innerWidth > 768) ? 'none' : 'flex',
             justifyContent: 'space-around',
             alignItems: 'center',
             padding: '12px 0 calc(12px + env(safe-area-inset-bottom, 0px))',
-            backgroundColor: '#fff',
-            borderTop: '1px solid #eee',
+            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            borderTop: '1px solid var(--vandy-sand)',
             position: 'fixed',
             bottom: 0,
             left: 0,
             right: 0,
-            zIndex: 100
+            zIndex: 1000
         }}>
             <Link href="/home" style={getLinkStyle('/home')}>
                 <Home size={24} />

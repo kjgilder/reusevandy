@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from 'react';
 import Navbar from '../../components/Navbar';
-import BottomNav from '../../components/BottomNav';
 import MyListingCard from '../../components/MyListingCard';
 import DeleteModal from '../../components/DeleteModal';
 import ListingModal from '../../components/ListingModal';
@@ -487,7 +486,7 @@ export default function MyListingsPage() {
                 />
             )}
 
-            <BottomNav />
+
 
             <ChangePasswordModal
                 isOpen={isChangePasswordOpen}

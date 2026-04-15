@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '../../components/Navbar';
-import BottomNav from '../../components/BottomNav';
 import FilterBar from '../../components/FilterBar';
 import ProductCard from '../../components/ProductCard';
 import ListingModal from '../../components/ListingModal';
@@ -201,8 +200,6 @@ export default function HomePage() {
                     </div>
                 )}
             </main>
-
-            <BottomNav />
         </div>
     );
 }

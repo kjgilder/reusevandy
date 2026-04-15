@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import BottomNav from '../../components/BottomNav';
 import { Search, Send, CheckCircle2, XCircle, Loader2, ArrowLeft } from 'lucide-react';
 import Image from 'next/image';
 import { getConversations, getMessages, sendMessage, updateOfferStatus, sendOffer, confirmTransaction, cancelListing, BASE_URL } from '../../utils/api';
@@ -649,12 +648,11 @@ export default function MessagesPage() {
                     onListingDeleted={() => {
                         setIsDetailModalOpen(false);
                     }}
-                    hideActions={true}
-                />
-            )}
+                hideActions={true}
+            />
+          )}
 
-            <BottomNav />
-            <style jsx>{`
+          <style jsx>{`
                 @keyframes spin {
                     from { transform: rotate(0deg); }
                     to { transform: rotate(360deg); }
